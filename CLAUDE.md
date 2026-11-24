@@ -6,7 +6,10 @@ Guida per Claude Code a questo repository.
 
 Startpage personale per il browser. Tutto sta in un solo file, [index.html](index.html): HTML, CSS e JavaScript inline, nessuna dipendenza esterna, nessuna build, nessun test automatico. Per provarlo si apre il file nel browser.
 
-Interfaccia, testi e commenti nel codice sono in **italiano**: mantieni la stessa lingua.
+Lingue:
+- **Commenti nel codice** e documentazione: in italiano.
+- **Interfaccia principale**: multilingua tramite l'oggetto `I18N` (it, en, fr, de, es). Ogni nuovo testo visibile va aggiunto a tutte le lingue, non scritto direttamente nel markup o nel codice.
+- **Preferenze** (finestra, messaggi di errore, etichette dei motori e dei colori): sempre in inglese, testi scritti direttamente.
 
 ## Struttura di index.html
 
@@ -14,7 +17,8 @@ Interfaccia, testi e commenti nel codice sono in **italiano**: mantieni la stess
 2. `<script>` nell'head: applica il tema salvato prima del rendering, per evitare lampi.
 3. Markup: `.hero` (data, SVG del sole, orologio analogico SVG), `.cal-block`, `.rail` (ricerche e collegamenti), `.yearbar` (linea dell'anno), pulsante `.gear` e `<dialog class="prefs">`.
 4. `<script>` finale in un'unica IIFE, divisa in sezioni con commenti `// ---------- Nome ----------`:
-   - Festività italiane (`easter`, `holidays` con cache per anno)
+   - Lingue: `I18N`, `resolveLanguage` (da "auto" alla prima lingua del browser disponibile, altrimenti inglese), `applyLanguage` (imposta `T`, `LOCALE`, `DOW`, `lang`, titolo ed etichette ARIA), `fmtText` per i segnaposto `{0}`. Date, mesi e giorni vengono da `Intl` con `LOCALE`
+   - Festività italiane (`easter`, `holidays` con cache per anno): la mappa contiene chiavi (`christmas`, …) tradotte con `T.holidays`
    - Utility (`isoWeek`, `dayOfYear`, `key`)
    - Sole (`sunElevation`, `renderSunDay`, `renderSunDot`), con le coordinate prese da `settings.location`. `renderSunDay` campiona l'ora dell'orologio con `new Date(a, m, g, 0, minuti)` per gestire il cambio dell'ora legale
    - Marcatori annuali: `markersSvg` considera anche l'occorrenza iniziata l'anno prima, per i periodi a cavallo di capodanno
@@ -22,8 +26,10 @@ Interfaccia, testi e commenti nel codice sono in **italiano**: mantieni la stess
    - Calendari (`monthCalendar`, `renderCalendars`, `centerTodayCircle`)
    - Linea dell'anno (`renderYear`, `markersSvg`, `bracePath`, `MARKER_COLORS`), ridisegnata da un `ResizeObserver` perché le parentesi dei periodi sono in pixel
    - Preferenze (`DEFAULTS`, `ENGINES`, `loadSettings`/`saveSettings`, `applySettings`, finestra con bozza `draft`, validazione in `submit`). La posizione (`location: { name, lat, lon }`) ha campi fissi nel form, identificati da `name` e non da `data-field`; `parseCoord` accetta virgola o punto; `findPlace` cerca le coordinate dal nome con l'API di geocodifica di Open-Meteo (cerca solo la parte prima della virgola e salva il nome come "Città, Regione"); `locNameEdited` la fa partire al salvataggio se il nome è cambiato senza aggiornare le coordinate
-   - Favicon disegnata su canvas col giorno del mese
-   - Loop: `tick()` ogni secondo ridisegna tutto solo al cambio di giorno; il pallino del sole ogni 30 s
+   - Icone dei collegamenti e dei motori di ricerca: `BRAND_ICONS` e `GENERIC_ICONS` (da Tabler Icons 3.50.0, contorno; id → [nome, contenuto SVG]), unite in `LINK_ICONS`. `brandFor` riconosce il marchio confrontando "dominio/percorso" con `BRAND_HOSTS` (voci specifiche prima, es. Gmail prima di Google); `genericFor` sceglie un'icona generica dalle parole chiave. Il campo `icon` di collegamenti e ricerche vale "auto", "favicon" o un id di `LINK_ICONS`; `resolveLinkIcon(item, fallback)` decide (l'icona generica di ripiego è "link" per i collegamenti, "search" per i motori), `linkIconHtml` produce il markup (favicon se già in memoria) e `itemIcon` crea l'elemento per la pagina, scaricando la favicon quando serve. I campi di ricerca non hanno titolo: l'icona sta al posto della lente e il nome è nel segnaposto e in `aria-label`. Nelle preferenze `iconPanel(kind, item, i)` è il pannello a griglia filtrabile, uno solo aperto alla volta (`iconPicker` = "search:i" o "link:i"); righe e pannello hanno `data-kind` e `data-index`. Il pannello è un fratello della riga in `#pref-searches`/`#pref-links`, quindi le righe si leggono con `:scope > .row`. Per aggiungere un'icona: scarica l'SVG di Tabler, togli l'involucro `<svg>` e il percorso `M0 0h24v24H0z`, aggiungila alla tabella e, se è un marchio, a `BRAND_HOSTS`
+   - Favicon dei collegamenti: `loadFavicon` scarica l'icona da icon.horse (ha CORS, quindi i pixel si possono leggere; l'intestazione `X-Icon-Fallback: true` indica un'icona generata con una lettera, che viene scartata); `toMask` la converte su canvas in una sagoma alfa a 64 px, usata come `mask` CSS su `.favicon` con il colore del tema. Cache in `localStorage` (`startpage-favicons`, per dominio): 30 giorni se trovata, nuovo tentativo dopo un giorno se no; `pruneFavicons` toglie i domini non più usati. In mancanza resta l'icona generica
+   - Favicon della pagina disegnata su canvas col giorno del mese
+   - `renderDay` ridisegna data, calendari, linea dell'anno, sole e favicon: la chiamano `applySettings` e il controllo ogni secondo al cambio di giorno; il pallino del sole si aggiorna ogni 30 s
    - Scorciatoie da tastiera per i campi di ricerca
 
 ## Convenzioni
@@ -31,7 +37,7 @@ Interfaccia, testi e commenti nel codice sono in **italiano**: mantieni la stess
 - Preferenze in `localStorage` con chiave `startpage-settings`. Se aggiungi un campo: mettilo in `DEFAULTS`, validalo in `loadSettings`, gestiscilo in `renderDraft`, nel listener `input` e nel `submit` del form.
 - Testo inserito dall'utente nell'SVG passa da `escapeXml`; nel DOM usa `textContent` o `.value`, non `innerHTML`.
 - Colori sempre tramite variabili CSS, così funzionano in entrambi i temi.
-- La pagina deve restare utilizzabile senza rete. L'unica chiamata esterna è la ricerca della località nelle preferenze, su richiesta; le coordinate si possono sempre inserire a mano.
+- La pagina deve restare utilizzabile senza rete. Chiamate esterne: la ricerca della località nelle preferenze (su richiesta; le coordinate si possono sempre inserire a mano) e le favicon dei collegamenti da icon.horse, solo per i siti senza icona di marchio (con l'icona generica come ripiego). Ogni nuova chiamata deve avere un ripiego che funzioni offline.
 - Nessun riferimento personale o aziendale nei valori predefiniti (`DEFAULTS`): solo servizi generici. I collegamenti personali li inserisce l'utente dalle preferenze.
 
 ## Documentazione: tienila aggiornata

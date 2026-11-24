@@ -109,13 +109,7 @@
     padding-top: 40px;
     display: flex; flex-direction: column; gap: 28px;
   }
-  .searches { display: flex; flex-direction: column; gap: 28px; }
-  .search label {
-    display: flex; align-items: center; gap: 8px;
-    font-family: var(--serif);
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
+  .searches { display: flex; flex-direction: column; gap: 12px; }
   .search-field {
     display: flex; align-items: center; gap: 10px;
     border: 1px solid var(--border);
@@ -128,7 +122,7 @@
   .search-field:focus-within {
     border-color: var(--selected-border);
   }
-  .search-field .icon { color: var(--text-3); flex: none; }
+  .search-field .icon, .search-field .favicon { color: var(--text-3); flex: none; }
   .search-field input {
     flex: 1; min-width: 0;
     border: 0; outline: 0; background: transparent;
@@ -168,7 +162,15 @@
   }
   .links a:hover { background: var(--hover); border-color: var(--text-4); }
   .links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .links .icon { color: var(--text-3); flex: none; }
+  .links .icon, .links .favicon { color: var(--text-3); flex: none; }
+  /* Favicon del sito resa monocromatica: la sagoma (calcolata in JS) fa da maschera
+     al colore del testo, così segue il tema come le icone disegnate */
+  .favicon {
+    width: 16px; height: 16px; flex: none;
+    background: currentColor;
+    -webkit-mask: var(--fav) center / contain no-repeat;
+            mask: var(--fav) center / contain no-repeat;
+  }
 
   /* ---------- Data ---------- */
   .hero {
@@ -424,14 +426,44 @@
     background: var(--bg); color: var(--text);
     font: inherit; font-size: 14px;
   }
+  .prefs select.lang { width: auto; min-width: 220px; }
   .prefs input:focus, .prefs select:focus { outline: none; border-color: var(--selected-border); }
   .prefs input:disabled { background: var(--chip-bg); color: var(--text-3); }
   .prefs input.bad { border-color: var(--holiday); }
   .prefs .key { text-align: center; text-transform: lowercase; }
   .row { display: grid; gap: 8px; align-items: center; margin-bottom: 8px; }
   .row-head { font-size: 11.5px; color: var(--text-3); margin-bottom: 6px; }
-  .search-row { grid-template-columns: 170px minmax(0, 1fr) minmax(0, 1.6fr) 56px 32px; }
-  .link-row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 32px 32px 32px; }
+  .search-row { grid-template-columns: 36px 170px minmax(0, 1fr) minmax(0, 1.6fr) 56px 32px; }
+  .link-row { grid-template-columns: 36px minmax(0, 1fr) minmax(0, 2fr) 32px 32px 32px; }
+  /* Scelta dell'icona di un collegamento: pulsante con l'icona attuale e pannello a griglia */
+  .icon-pick {
+    width: 36px; height: 36px; padding: 0;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text-2);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .icon-pick:hover { border-color: var(--text-4); }
+  .icon-pick[aria-expanded="true"] { border-color: var(--selected-border); background: var(--selected-bg); }
+  .icon-pick .icon, .icon-choice .icon { width: 18px; height: 18px; }
+  .icon-panel {
+    margin: 0 0 10px; padding: 10px;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--bg);
+  }
+  .icon-panel-head { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .prefs .icon-panel-head .icon-filter { flex: 1; width: auto; min-width: 140px; }
+  .icon-panel-head .btn[aria-pressed="true"],
+  .icon-choice[aria-pressed="true"] { background: var(--selected-bg); border-color: var(--selected-border); color: var(--text); }
+  .icon-group { font-size: 11.5px; color: var(--text-3); margin: 8px 0 4px; }
+  .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 2px; }
+  .icon-scroll { max-height: 220px; overflow: auto; }
+  .icon-choice {
+    height: 36px; padding: 0;
+    border: 1px solid transparent; border-radius: 7px;
+    background: transparent; color: var(--text-2);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .icon-choice:hover { background: var(--hover); color: var(--text); }
+  .icon-choice[hidden] { display: none; }
   .marker-row { grid-template-columns: 138px 138px minmax(0, 1fr) 118px 92px 32px; }
   .loc-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
   .loc-row .find { white-space: nowrap; }
@@ -492,9 +524,9 @@
   .btn.quiet { border-color: transparent; background: transparent; color: var(--text-3); padding: 0 4px; }
   .btn.quiet:hover { color: var(--text); background: transparent; text-decoration: underline; }
   @media (max-width: 700px) {
-    .search-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 56px 32px; }
+    .search-row { grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1fr) 56px 32px; }
     .search-row .tpl { grid-column: 1 / -1; grid-row: 2; }
-    .link-row { grid-template-columns: minmax(0, 1fr) 32px 32px 32px; }
+    .link-row { grid-template-columns: 36px minmax(0, 1fr) 32px 32px 32px; }
     .link-row .url { grid-column: 1 / -1; grid-row: 2; }
     .marker-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; }
     .loc-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -636,63 +668,69 @@
   <dialog class="prefs" id="prefs" aria-labelledby="prefs-title">
     <form id="prefs-form" novalidate>
       <div class="prefs-head">
-        <h2 id="prefs-title">Preferenze</h2>
-        <button class="icon-btn" type="button" data-action="cancel" aria-label="Chiudi">
+        <h2 id="prefs-title">Preferences</h2>
+        <button class="icon-btn" type="button" data-action="cancel" aria-label="Close">
           <svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
       <div class="prefs-body">
         <section class="prefs-section">
-          <h3>Tema</h3>
-          <div class="seg" role="radiogroup" aria-label="Tema">
-            <label><input type="radio" name="theme" value="system"><span>Sistema</span></label>
-            <label><input type="radio" name="theme" value="light"><span>Chiaro</span></label>
-            <label><input type="radio" name="theme" value="dark"><span>Scuro</span></label>
+          <h3>Language</h3>
+          <p class="hint">Language of the start page: dates, calendars, holidays and labels. "Automatic" follows the browser. Preferences are always in English.</p>
+          <select name="language" class="lang" aria-label="Language"></select>
+        </section>
+
+        <section class="prefs-section">
+          <h3>Theme</h3>
+          <div class="seg" role="radiogroup" aria-label="Theme">
+            <label><input type="radio" name="theme" value="system"><span>System</span></label>
+            <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+            <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
           </div>
         </section>
 
         <section class="prefs-section">
-          <h3>Posizione</h3>
-          <p class="hint">Usata per calcolare alba, tramonto e percorso del sole. Scrivi il nome della località e premi "Cerca" (o Invio) per trovare le coordinate, oppure inseriscile a mano in gradi decimali.</p>
-          <div class="row loc-row row-head"><span>Nome</span><span>Latitudine</span><span>Longitudine</span><span></span></div>
+          <h3>Location</h3>
+          <p class="hint">Used to compute sunrise, sunset and the sun's path. Type a place name and press "Find" (or Enter) to look up its coordinates, or enter them by hand in decimal degrees.</p>
+          <div class="row loc-row row-head"><span>Name</span><span>Latitude</span><span>Longitude</span><span></span></div>
           <div class="row loc-row">
-            <input type="text" class="lname" name="locName" aria-label="Nome della località" placeholder="Città">
-            <input type="text" name="lat" aria-label="Latitudine" inputmode="decimal" placeholder="41,9028">
-            <input type="text" name="lon" aria-label="Longitudine" inputmode="decimal" placeholder="12,4964">
-            <button class="btn find" type="button" data-action="find-place">Cerca</button>
+            <input type="text" class="lname" name="locName" aria-label="Place name" placeholder="City">
+            <input type="text" name="lat" aria-label="Latitude" inputmode="decimal" placeholder="41.9028">
+            <input type="text" name="lon" aria-label="Longitude" inputmode="decimal" placeholder="12.4964">
+            <button class="btn find" type="button" data-action="find-place">Find</button>
           </div>
         </section>
 
         <section class="prefs-section">
-          <h3>Ricerca</h3>
-          <p class="hint">Scegli un motore predefinito, oppure "Personalizzato" e scrivi l'indirizzo di ricerca con <code>%s</code> al posto del testo cercato. Il tasto è la scorciatoia da tastiera per andare al campo.</p>
-          <div class="row search-row row-head"><span>Motore</span><span>Etichetta</span><span>Indirizzo</span><span>Tasto</span><span></span></div>
+          <h3>Search</h3>
+          <p class="hint">Pick a predefined engine, or "Custom" and enter the search address with <code>%s</code> in place of the search text. The key is the keyboard shortcut that jumps to the field. Click the icon to choose the one shown in the search field; "Automatic" works as for links.</p>
+          <div class="row search-row row-head"><span>Icon</span><span>Engine</span><span>Label</span><span>Address</span><span>Key</span><span></span></div>
           <div id="pref-searches"></div>
-          <button class="add-btn" type="button" data-action="add-search">+ Aggiungi motore di ricerca</button>
+          <button class="add-btn" type="button" data-action="add-search">+ Add search engine</button>
         </section>
 
         <section class="prefs-section">
-          <h3>Collegamenti</h3>
-          <p class="hint">I pulsanti sotto le ricerche. L'icona viene scelta in automatico in base al nome o all'indirizzo.</p>
-          <div class="row link-row row-head"><span>Etichetta</span><span>Indirizzo</span><span></span><span></span><span></span></div>
+          <h3>Links</h3>
+          <p class="hint">The buttons below the search fields. Click the icon to choose one. "Automatic" uses the brand icon when the address is a known service, otherwise the site's own icon in monochrome (fetched from icon.horse), or a generic icon when that isn't available.</p>
+          <div class="row link-row row-head"><span>Icon</span><span>Label</span><span>Address</span><span></span><span></span><span></span></div>
           <div id="pref-links"></div>
-          <button class="add-btn" type="button" data-action="add-link">+ Aggiungi collegamento</button>
+          <button class="add-btn" type="button" data-action="add-link">+ Add link</button>
         </section>
 
         <section class="prefs-section">
-          <h3>Marcatori</h3>
-          <p class="hint">Date da segnare con uno spillo sulla linea dell'anno. Indica anche la data di fine per un periodo, come le ferie. Con "Ogni anno" il marcatore si ripete sempre negli stessi giorni, anche a cavallo di capodanno (es. dal 20 dicembre al 6 gennaio).</p>
-          <div class="row marker-row row-head"><span>Dal</span><span>Al (facoltativo)</span><span>Nome</span><span>Colore</span><span></span><span></span></div>
+          <h3>Markers</h3>
+          <p class="hint">Dates to pin on the year line. Add an end date for a period, such as a holiday. With "Every year" the marker repeats on the same days, even across New Year (e.g. December 20 to January 6).</p>
+          <div class="row marker-row row-head"><span>From</span><span>To (optional)</span><span>Name</span><span>Color</span><span></span><span></span></div>
           <div id="pref-markers"></div>
-          <button class="add-btn" type="button" data-action="add-marker">+ Aggiungi marcatore</button>
+          <button class="add-btn" type="button" data-action="add-marker">+ Add marker</button>
         </section>
       </div>
       <div class="prefs-foot">
-        <button class="btn quiet" type="button" data-action="reset">Ripristina predefiniti</button>
+        <button class="btn quiet" type="button" data-action="reset">Restore defaults</button>
         <div class="right">
           <p class="prefs-error" id="prefs-error" role="alert"></p>
-          <button class="btn" type="button" data-action="cancel">Annulla</button>
-          <button class="btn primary" type="submit">Salva</button>
+          <button class="btn" type="button" data-action="cancel">Cancel</button>
+          <button class="btn primary" type="submit">Save</button>
         </div>
       </div>
     </form>
@@ -700,8 +738,83 @@
 
 <script>
 (() => {
-  const LOCALE = "it-IT";
-  const DOW = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"];
+  // ---------- Lingue dell'interfaccia principale ----------
+  // Le preferenze sono sempre in inglese. Date, mesi e giorni vengono da Intl;
+  // qui ci sono solo i testi. {0}, {1} sono sostituiti dai valori.
+  const I18N = {
+    it: {
+      name: "Italiano", title: "Home", prefs: "Preferenze", links: "Collegamenti",
+      searchOn: "Cerca su {0}", noHolidays: "Nessuna festività",
+      sun: "Alba {0} · tramonto {1}", year: "{0} giorni trascorsi · {1} rimanenti", yearAria: "Avanzamento dell'anno",
+      holidays: { newYear: "Capodanno", epiphany: "Epifania", liberation: "Festa della Liberazione",
+        labour: "Festa dei Lavoratori", republic: "Festa della Repubblica", assumption: "Ferragosto",
+        francis: "San Francesco d'Assisi", allSaints: "Ognissanti", immaculate: "Immacolata Concezione",
+        christmas: "Natale", stephen: "Santo Stefano", easter: "Pasqua", easterMonday: "Lunedì dell'Angelo" }
+    },
+    en: {
+      name: "English", title: "Home", prefs: "Preferences", links: "Links",
+      searchOn: "Search {0}", noHolidays: "No holidays",
+      sun: "Sunrise {0} · sunset {1}", year: "{0} days passed · {1} left", yearAria: "Year progress",
+      holidays: { newYear: "New Year's Day", epiphany: "Epiphany", liberation: "Liberation Day",
+        labour: "Labour Day", republic: "Republic Day", assumption: "Assumption Day",
+        francis: "St Francis of Assisi", allSaints: "All Saints' Day", immaculate: "Immaculate Conception",
+        christmas: "Christmas Day", stephen: "St Stephen's Day", easter: "Easter", easterMonday: "Easter Monday" }
+    },
+    fr: {
+      name: "Français", title: "Accueil", prefs: "Préférences", links: "Liens",
+      searchOn: "Rechercher sur {0}", noHolidays: "Aucun jour férié",
+      sun: "Lever {0} · coucher {1}", year: "{0} jours écoulés · {1} restants", yearAria: "Avancement de l'année",
+      holidays: { newYear: "Jour de l'An", epiphany: "Épiphanie", liberation: "Fête de la Libération",
+        labour: "Fête du Travail", republic: "Fête de la République", assumption: "Assomption",
+        francis: "Saint François d'Assise", allSaints: "Toussaint", immaculate: "Immaculée Conception",
+        christmas: "Noël", stephen: "Saint-Étienne", easter: "Pâques", easterMonday: "Lundi de Pâques" }
+    },
+    de: {
+      name: "Deutsch", title: "Startseite", prefs: "Einstellungen", links: "Links",
+      searchOn: "Auf {0} suchen", noHolidays: "Keine Feiertage",
+      sun: "Sonnenaufgang {0} · Sonnenuntergang {1}", year: "{0} Tage vergangen · {1} übrig", yearAria: "Jahresfortschritt",
+      holidays: { newYear: "Neujahr", epiphany: "Heilige Drei Könige", liberation: "Tag der Befreiung",
+        labour: "Tag der Arbeit", republic: "Tag der Republik", assumption: "Mariä Himmelfahrt",
+        francis: "Franz von Assisi", allSaints: "Allerheiligen", immaculate: "Mariä Empfängnis",
+        christmas: "Weihnachten", stephen: "Stephanstag", easter: "Ostern", easterMonday: "Ostermontag" }
+    },
+    es: {
+      name: "Español", title: "Inicio", prefs: "Preferencias", links: "Enlaces",
+      searchOn: "Buscar en {0}", noHolidays: "Sin festivos",
+      sun: "Amanecer {0} · atardecer {1}", year: "{0} días pasados · {1} restantes", yearAria: "Progreso del año",
+      holidays: { newYear: "Año Nuevo", epiphany: "Epifanía", liberation: "Día de la Liberación",
+        labour: "Día del Trabajo", republic: "Día de la República", assumption: "Asunción",
+        francis: "San Francisco de Asís", allSaints: "Todos los Santos", immaculate: "Inmaculada Concepción",
+        christmas: "Navidad", stephen: "San Esteban", easter: "Pascua", easterMonday: "Lunes de Pascua" }
+    }
+  };
+  // lingua e locale correnti, impostati da applyLanguage()
+  let T = I18N.en, LOCALE = "en", DOW = [];
+  const fmtText = (s, ...v) => s.replace(/\{(\d)\}/g, (_, i) => v[i]);
+  // "auto": la prima lingua del browser tra quelle disponibili, altrimenti inglese.
+  // Il locale tiene la variante regionale del browser se è della stessa lingua (es. en-GB).
+  function resolveLanguage(pref) {
+    const browser = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || "en"];
+    const base = l => String(l).toLowerCase().split("-")[0];
+    const lang = I18N[pref] ? pref : (browser.map(base).find(l => I18N[l]) || "en");
+    const locale = browser.find(l => base(l) === lang) || lang;
+    return { lang, locale };
+  }
+  function applyLanguage(pref) {
+    const { lang, locale } = resolveLanguage(pref);
+    T = I18N[lang];
+    LOCALE = locale;
+    // giorni della settimana da lunedì (5 gennaio 2026 è un lunedì), senza il punto finale delle abbreviazioni
+    DOW = Array.from({ length: 7 }, (_, i) =>
+      new Date(2026, 0, 5 + i).toLocaleDateString(locale, { weekday: "short" }).replace(/\.$/, ""));
+    document.documentElement.lang = lang;
+    document.title = T.title;
+    document.getElementById("links").setAttribute("aria-label", T.links);
+    document.getElementById("year-line").setAttribute("aria-label", T.yearAria);
+    const gear = document.getElementById("open-prefs");
+    gear.setAttribute("aria-label", T.prefs);
+    gear.title = T.prefs;
+  }
 
   // ---------- Festività italiane ----------
   function easter(y) {
@@ -716,28 +829,29 @@
   }
   const key = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   const holidayCache = {};
+  // la mappa contiene le chiavi delle festività; il nome tradotto è in T.holidays
   function holidays(y) {
     if (holidayCache[y]) return holidayCache[y];
     const map = {};
-    const add = (m, d, name) => { map[key(new Date(y, m, d))] = name; };
-    add(0, 1, "Capodanno");
-    add(0, 6, "Epifania");
-    add(3, 25, "Festa della Liberazione");
-    add(4, 1, "Festa dei Lavoratori");
-    add(5, 2, "Festa della Repubblica");
-    add(7, 15, "Ferragosto");
-    add(9, 4, "San Francesco d'Assisi");
-    add(10, 1, "Ognissanti");
-    add(11, 8, "Immacolata Concezione");
-    add(11, 25, "Natale");
-    add(11, 26, "Santo Stefano");
+    const add = (m, d, id) => { map[key(new Date(y, m, d))] = id; };
+    add(0, 1, "newYear");
+    add(0, 6, "epiphany");
+    add(3, 25, "liberation");
+    add(4, 1, "labour");
+    add(5, 2, "republic");
+    add(7, 15, "assumption");
+    add(9, 4, "francis");
+    add(10, 1, "allSaints");
+    add(11, 8, "immaculate");
+    add(11, 25, "christmas");
+    add(11, 26, "stephen");
     const e = easter(y);
-    map[key(e)] = "Pasqua";
+    map[key(e)] = "easter";
     const em = new Date(e); em.setDate(e.getDate() + 1);
-    map[key(em)] = "Lunedì dell'Angelo";
+    map[key(em)] = "easterMonday";
     return (holidayCache[y] = map);
   }
-  const holidayName = d => holidays(d.getFullYear())[key(d)];
+  const holidayName = d => { const id = holidays(d.getFullYear())[key(d)]; return id && T.holidays[id]; };
 
   // ---------- Utility ----------
   function isoWeek(date) {
@@ -813,7 +927,7 @@
     label("sun-set", set);
     const place = settings.location.name;
     document.getElementById("sun-title").textContent =
-      `Alba ${rise == null ? "—" : hhmm(rise)} · tramonto ${set == null ? "—" : hhmm(set)}` + (place ? ` · ${place}` : "");
+      fmtText(T.sun, rise == null ? "—" : hhmm(rise), set == null ? "—" : hhmm(set)) + (place ? ` · ${place}` : "");
   }
   function renderSunDot(now) {
     const m = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
@@ -864,15 +978,15 @@
         if (h && !out) { classes.push("holiday"); monthHolidays.push([cursor.getDate(), h]); }
         if (sameDay(cursor, today)) classes.push("today");
         else if (cursor < today && !out) classes.push("past");
-        const title = h ? ` title="${h}"` : "";
+        const title = h ? ` title="${escapeXml(h)}"` : "";
         html += `<div class="${classes.join(" ")}"${title}><span>${cursor.getDate()}</span></div>`;
         cursor.setDate(cursor.getDate() + 1);
       }
     }
     html += `</div>`;
     html += `<div class="holidays">` + (monthHolidays.length
-      ? monthHolidays.map(([d, n]) => `<span class="chip">${d} · ${n}</span>`).join("")
-      : `Nessuna festività`) + `</div>`;
+      ? monthHolidays.map(([d, n]) => `<span class="chip">${d} · ${escapeXml(n)}</span>`).join("")
+      : T.noHolidays) + `</div>`;
     el.innerHTML = html;
     return el;
   }
@@ -915,12 +1029,12 @@
   // ---------- Avanzamento dell'anno ----------
   // Tavolozza dei marcatori: colori medi, leggibili sia sul tema chiaro sia sullo scuro
   const MARKER_COLORS = [
-    { id: "grey",   label: "Grigio",    css: "var(--text-2)" },
-    { id: "orange", label: "Arancione", css: "var(--clock-second)" },
-    { id: "red",    label: "Rosso",     css: "#d9534a" },
-    { id: "green",  label: "Verde",     css: "#2f9e6a" },
-    { id: "blue",   label: "Blu",       css: "#3b82d6" },
-    { id: "violet", label: "Viola",     css: "#8062d6" }
+    { id: "grey",   label: "Grey",      css: "var(--text-2)" },
+    { id: "orange", label: "Orange",    css: "var(--clock-second)" },
+    { id: "red",    label: "Red",       css: "#d9534a" },
+    { id: "green",  label: "Green",     css: "#2f9e6a" },
+    { id: "blue",   label: "Blue",      css: "#3b82d6" },
+    { id: "violet", label: "Violet",    css: "#8062d6" }
   ];
   const markerColor = id => (MARKER_COLORS.find(c => c.id === id) || MARKER_COLORS[0]).css;
 
@@ -1036,7 +1150,7 @@
     svg += markersSvg(y, total, line.clientWidth);
     svg += `<circle class="dot" cx="${pct}%" cy="4.5" r="4.5"/>`;  // come il pallino del sole
     line.innerHTML = svg;
-    line.title = `${done} giorni trascorsi · ${total - done} rimanenti`;
+    line.title = fmtText(T.year, done, total - done);
     document.getElementById("year-past").textContent = done;
     document.getElementById("year-left").textContent = total - done;
     line.setAttribute("aria-valuenow", Math.floor(pct));
@@ -1060,7 +1174,7 @@
     { id: "youtube",      label: "YouTube",           url: "https://www.youtube.com/results?search_query=%s" },
     { id: "maps",         label: "Google Maps",       url: "https://www.google.com/maps/search/%s" },
     { id: "osm",          label: "OpenStreetMap",     url: "https://www.openstreetmap.org/search?query=%s" },
-    { id: "translate",    label: "Google Traduttore", url: "https://translate.google.com/?sl=auto&tl=it&text=%s" },
+    { id: "translate",    label: "Google Translate",  url: "https://translate.google.com/?sl=auto&tl=it&text=%s" },
     { id: "deepl",        label: "DeepL",             url: "https://www.deepl.com/translator#auto/it/%s" },
     { id: "github",       label: "GitHub",            url: "https://github.com/search?q=%s" },
     { id: "amazon-it",    label: "Amazon.it",         url: "https://www.amazon.it/s?k=%s" }
@@ -1068,6 +1182,7 @@
   const engineById = id => ENGINES.find(e => e.id === id);
 
   const DEFAULTS = {
+    language: "auto",  // "auto" (lingua del browser) o una chiave di I18N
     theme: "system",
     searches: [
       { engine: "duckduckgo",   label: "DuckDuckGo", url: engineById("duckduckgo").url,   key: "d" },
@@ -1094,6 +1209,7 @@
     try { s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); } catch (e) {}
     const out = clone(DEFAULTS);
     if (s && typeof s === "object") {
+      if (s.language === "auto" || I18N[s.language]) out.language = s.language;
       if (["system", "light", "dark"].includes(s.theme)) out.theme = s.theme;
       // scarta le voci malformate, che altrimenti bloccherebbero la pagina
       const isStr = v => typeof v === "string";
@@ -1129,28 +1245,233 @@
   const ICONS = {
     search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
     arrow: '<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',
-    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
-    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
-    cloud: '<path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 7.9H7z"/>',
-    diagram: '<rect x="3" y="3" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/><path d="M6.5 9v4a2 2 0 0 0 2 2H14"/>',
-    doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
-    chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
-    code: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4"/>',
-    link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
     up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
     down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
     trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'
   };
-  function linkIcon(l) {
-    const t = (l.label + " " + l.url).toLowerCase();
-    if (/mail|posta|gmail|outlook/.test(t)) return ICONS.mail;
-    if (/calend|agenda/.test(t)) return ICONS.calendar;
-    if (/onedrive|sharepoint|drive|dropbox|cloud|icloud/.test(t)) return ICONS.cloud;
-    if (/visio|diagram|draw|miro|figma/.test(t)) return ICONS.diagram;
-    if (/teams|slack|chat|whatsapp|telegram|mastodon/.test(t)) return ICONS.chat;
-    if (/github|gitlab|bitbucket|code/.test(t)) return ICONS.code;
-    if (/word|excel|docs|sheets|notion|office|powerpoint|onenote/.test(t)) return ICONS.doc;
-    return ICONS.link;
+  // ----- Icone dei collegamenti -----
+  // Da Tabler Icons 3.50.0 (licenza MIT, https://tabler.io/icons), versione a contorno:
+  // id → [nome mostrato nelle preferenze, contenuto dell'SVG 24×24]
+  const BRAND_ICONS = {
+    "gmail": ["Gmail", '<path d="M16 20h3a1 1 0 0 0 1 -1v-14a1 1 0 0 0 -1 -1h-3v16"/><path d="M5 20h3v-16h-3a1 1 0 0 0 -1 1v14a1 1 0 0 0 1 1"/><path d="M16 4l-4 4l-4 -4"/><path d="M4 6.5l8 7.5l8 -7.5"/>'],
+    "google": ["Google", '<path d="M20.945 11a9 9 0 1 1 -3.284 -5.997l-2.655 2.392a5.5 5.5 0 1 0 2.119 6.605h-4.125v-3h7.945"/>'],
+    "google-drive": ["Google Drive", '<path d="M12 10l-6 10l-3 -5l6 -10l3 5"/><path d="M9 15h12l-3 5h-12"/><path d="M15 15l-6 -10h6l6 10l-6 0"/>'],
+    "google-maps": ["Google Maps", '<path d="M9.5 9.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/><path d="M6.428 12.494l7.314 -9.252"/><path d="M10.002 7.935l-2.937 -2.545"/><path d="M17.693 6.593l-8.336 9.979"/><path d="M17.591 6.376c.472 .907 .715 1.914 .709 2.935a7.263 7.263 0 0 1 -.72 3.18a19.085 19.085 0 0 1 -2.089 3c-.784 .933 -1.49 1.93 -2.11 2.98c-.314 .62 -.568 1.27 -.757 1.938c-.121 .36 -.277 .591 -.622 .591c-.315 0 -.463 -.136 -.626 -.593a10.595 10.595 0 0 0 -.779 -1.978a18.18 18.18 0 0 0 -1.423 -2.091c-.877 -1.184 -2.179 -2.535 -2.853 -4.071a7.077 7.077 0 0 1 -.621 -2.967a6.226 6.226 0 0 1 1.476 -4.055a6.25 6.25 0 0 1 4.811 -2.245a6.462 6.462 0 0 1 1.918 .284a6.255 6.255 0 0 1 3.686 3.092"/>'],
+    "google-photos": ["Google Photos", '<path d="M7.5 7c2.485 0 4.5 1.974 4.5 4.409v.591h-8.397a.61 .61 0 0 1 -.426 -.173a.585 .585 0 0 1 -.177 -.418c0 -2.435 2.015 -4.409 4.5 -4.409"/><path d="M16.5 17c-2.485 0 -4.5 -1.974 -4.5 -4.409v-.591h8.397c.333 0 .603 .265 .603 .591c0 2.435 -2.015 4.409 -4.5 4.409"/><path d="M7 16.5c0 -2.485 1.972 -4.5 4.405 -4.5h.595v8.392a.61 .61 0 0 1 -.173 .431a.584 .584 0 0 1 -.422 .177c-2.433 0 -4.405 -2.015 -4.405 -4.5"/><path d="M17 7.5c0 2.485 -1.972 4.5 -4.405 4.5h-.595v-8.397a.61 .61 0 0 1 .175 -.428a.584 .584 0 0 1 .42 -.175c2.433 0 4.405 2.015 4.405 4.5"/>'],
+    "google-play": ["Google Play", '<path d="M4 3.71v16.58a.7 .7 0 0 0 1.05 .606l14.622 -8.42a.55 .55 0 0 0 0 -.953l-14.622 -8.419a.7 .7 0 0 0 -1.05 .607l0 -.001"/><path d="M15 9l-10.5 11.5"/><path d="M4.5 3.5l10.5 11.5"/>'],
+    "youtube": ["YouTube", '<path d="M2 8a4 4 0 0 1 4 -4h12a4 4 0 0 1 4 4v8a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-8"/><path d="M10 9l5 3l-5 3l0 -6"/>'],
+    "github": ["GitHub", '<path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"/>'],
+    "gitlab": ["GitLab", '<path d="M21 14l-9 7l-9 -7l3 -11l3 7h6l3 -7l3 11"/>'],
+    "bitbucket": ["Bitbucket", '<path d="M3.648 4a.64 .64 0 0 0 -.64 .744l3.14 14.528c.07 .417 .43 .724 .852 .728h10a.644 .644 0 0 0 .642 -.539l3.35 -14.71a.641 .641 0 0 0 -.64 -.744l-16.704 -.007"/><path d="M14 15h-4l-1 -6h6l-1 6"/>'],
+    "mastodon": ["Mastodon", '<path d="M18.648 15.254c-1.816 1.763 -6.648 1.626 -6.648 1.626a18.262 18.262 0 0 1 -3.288 -.256c1.127 1.985 4.12 2.81 8.982 2.475c-1.945 2.013 -13.598 5.257 -13.668 -7.636l-.026 -1.154c0 -3.036 .023 -4.115 1.352 -5.633c1.671 -1.91 6.648 -1.666 6.648 -1.666s4.977 -.243 6.648 1.667c1.329 1.518 1.352 2.597 1.352 5.633s-.456 4.074 -1.352 4.944"/><path d="M12 11.204v-2.926c0 -1.258 -.895 -2.278 -2 -2.278s-2 1.02 -2 2.278v4.722m4 -4.722c0 -1.258 .895 -2.278 2 -2.278s2 1.02 2 2.278v4.722"/>'],
+    "bluesky": ["Bluesky", '<path d="M6.335 5.144c-1.654 -1.199 -4.335 -2.127 -4.335 .826c0 .59 .35 4.953 .556 5.661c.713 2.463 3.13 2.75 5.444 2.369c-4.045 .665 -4.889 3.208 -2.667 5.41c1.03 1.018 1.913 1.59 2.667 1.59c2 0 3.134 -2.769 3.5 -3.5c.333 -.667 .5 -1.167 .5 -1.5c0 .333 .167 .833 .5 1.5c.366 .731 1.5 3.5 3.5 3.5c.754 0 1.637 -.571 2.667 -1.59c2.222 -2.203 1.378 -4.746 -2.667 -5.41c2.314 .38 4.73 .094 5.444 -2.369c.206 -.708 .556 -5.072 .556 -5.661c0 -2.953 -2.68 -2.025 -4.335 -.826c-2.293 1.662 -4.76 5.048 -5.665 6.856c-.905 -1.808 -3.372 -5.194 -5.665 -6.856"/>'],
+    "threads": ["Threads", '<path d="M19 7.5c-1.333 -3 -3.667 -4.5 -7 -4.5c-5 0 -8 2.5 -8 9s3.5 9 8 9s7 -3 7 -5s-1 -5 -7 -5c-2.5 0 -3 1.25 -3 2.5c0 1.5 1 2.5 2.5 2.5c2.5 0 3.5 -1.5 3.5 -5s-2 -4 -3 -4s-1.833 .333 -2.5 1"/>'],
+    "x": ["X", '<path d="M4 4l11.733 16h4.267l-11.733 -16l-4.267 0"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/>'],
+    "facebook": ["Facebook", '<path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"/>'],
+    "instagram": ["Instagram", '<path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4l0 -10"/><path d="M8.5 12a3.5 3.5 0 1 0 7 0a3.5 3.5 0 0 0 -7 0"/><path d="M17 7v.01"/>'],
+    "linkedin": ["LinkedIn", '<path d="M8 11v5"/><path d="M8 8v.01"/><path d="M12 16v-5"/><path d="M16 16v-3a2 2 0 1 0 -4 0"/><path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4l0 -10"/>'],
+    "reddit": ["Reddit", '<path d="M12 8c2.648 0 5.028 .826 6.675 2.14a2.5 2.5 0 0 1 2.326 4.36c0 3.59 -4.03 6.5 -9 6.5c-4.875 0 -8.845 -2.8 -9 -6.294l-1 -.206a2.5 2.5 0 0 1 2.326 -4.36c1.646 -1.313 4.026 -2.14 6.674 -2.14l.999 0"/><path d="M12 8l1 -5l6 1"/><path d="M18 4a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M8.5 13a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"/><path d="M14.5 13a.5 .5 0 1 0 1 0a.5 .5 0 1 0 -1 0" fill="currentColor"/><path d="M10 17c.667 .333 1.333 .5 2 .5s1.333 -.167 2 -.5"/>'],
+    "whatsapp": ["WhatsApp", '<path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9"/><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1"/>'],
+    "telegram": ["Telegram", '<path d="M15 10l-4 4l6 6l4 -16l-18 7l4 2l2 6l3 -4"/>'],
+    "signal": ["Signal", '<path d="M2.708 22.726l.148 -.034l.822 -.191m2.754 -.642l.472 -.11c.485 .254 .987 .469 1.501 .647m2.939 .584c.218 .013 .437 .02 .656 .02c.22 0 .439 -.008 .657 -.02m2.939 -.583c.418 -.144 .824 -.312 1.217 -.504m2.484 -1.663c.329 -.292 .641 -.604 .933 -.933m1.663 -2.485c.192 -.393 .36 -.799 .505 -1.216m.582 -2.94c.012 -.217 .02 -.436 .02 -.656c0 -.22 -.008 -.439 -.02 -.657m-.583 -2.939c-.144 -.418 -.313 -.824 -.504 -1.217m-1.663 -2.484c-.292 -.329 -.604 -.641 -.933 -.933m-2.485 -1.663c-.393 -.192 -.799 -.36 -1.216 -.505m-2.94 -.582c-.217 -.012 -.436 -.02 -.656 -.02c-.22 0 -.439 .008 -.657 .02m-2.939 .583c-.418 .144 -.824 .313 -1.217 .504m-2.484 1.663c-.329 .292 -.641 .604 -.933 .933m-1.663 2.485c-.192 .393 -.36 .799 -.505 1.216m-.582 2.94c-.012 .217 -.02 .436 -.02 .656c0 .219 .007 .438 .02 .657m.584 2.939c.178 .514 .394 1.016 .648 1.501l-.11 .471m-.643 2.754l-.217 .93l-.009 .039c-.15 .643 .249 1.286 .892 1.436c.179 .041 .365 .041 .543 -.001"/><path d="M4.848 19.152l2.446 -.57l.993 .519c.56 .292 1.167 .519 1.805 .675c.597 .149 1.238 .223 1.908 .223c2.21 0 4.21 -.895 5.657 -2.342c1.447 -1.447 2.342 -3.447 2.342 -5.657c0 -2.21 -.895 -4.21 -2.342 -5.657c-1.447 -1.447 -3.447 -2.342 -5.657 -2.342c-2.21 0 -4.21 .895 -5.657 2.342c-1.447 1.447 -2.342 3.447 -2.342 5.657c0 .666 .075 1.308 .223 1.909c.156 .637 .383 1.244 .676 1.805l.519 .993l-.571 2.445"/>'],
+    "messenger": ["Messenger", '<path d="M3 20l1.3 -3.9a9 8 0 1 1 3.4 2.9l-4.7 1"/><path d="M8 13l3 -2l2 2l3 -2"/>'],
+    "slack": ["Slack", '<path d="M12 12v-6a2 2 0 0 1 4 0v6m0 -2a2 2 0 1 1 2 2h-6"/><path d="M12 12h6a2 2 0 0 1 0 4h-6m2 0a2 2 0 1 1 -2 2v-6"/><path d="M12 12v6a2 2 0 0 1 -4 0v-6m0 2a2 2 0 1 1 -2 -2h6"/><path d="M12 12h-6a2 2 0 0 1 0 -4h6m-2 0a2 2 0 1 1 2 -2v6"/>'],
+    "discord": ["Discord", '<path d="M8 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M14 12a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M15.5 17c0 1 1.5 3 2 3c1.5 0 2.833 -1.667 3.5 -3c.667 -1.667 .5 -5.833 -1.5 -11.5c-1.457 -1.015 -3 -1.34 -4.5 -1.5l-.972 1.923a11.913 11.913 0 0 0 -4.053 0l-.975 -1.923c-1.5 .16 -3.043 .485 -4.5 1.5c-2 5.667 -2.167 9.833 -1.5 11.5c.667 1.333 2 3 3.5 3c.5 0 2 -2 2 -3"/><path d="M7 16.5c3.5 1 6.5 1 10 0"/>'],
+    "teams": ["Microsoft Teams", '<path d="M3 7h10v10h-10l0 -10"/><path d="M6 10h4"/><path d="M8 10v4"/><path d="M8.104 17c.47 2.274 2.483 4 4.896 4a5 5 0 0 0 5 -5v-7h-5"/><path d="M18 18a4 4 0 0 0 4 -4v-5h-4"/><path d="M13.003 8.83a3 3 0 1 0 -1.833 -1.833"/><path d="M15.83 8.36a2.5 2.5 0 1 0 .594 -4.117"/>'],
+    "zoom": ["Zoom", '<path d="M17.011 9.385v5.128l3.989 3.487v-12l-3.989 3.385"/><path d="M3.887 6h10.08c1.468 0 3.033 1.203 3.033 2.803v8.196a.991 .991 0 0 1 -.975 1h-10.373c-1.667 0 -2.652 -1.5 -2.652 -3l.01 -8a.882 .882 0 0 1 .208 -.71a.841 .841 0 0 1 .67 -.287l-.001 -.002"/>'],
+    "skype": ["Skype", '<path d="M12 3a9 9 0 0 1 8.603 11.65a4.5 4.5 0 0 1 -5.953 5.953a9 9 0 0 1 -11.253 -11.253a4.5 4.5 0 0 1 5.953 -5.954a8.987 8.987 0 0 1 2.65 -.396"/><path d="M8 14.5c.5 2 2.358 2.5 4 2.5c2.905 0 4 -1.187 4 -2.5c0 -1.503 -1.927 -2.5 -4 -2.5s-4 -1 -4 -2.5c0 -1.313 1.095 -2.5 4 -2.5c1.642 0 3.5 .5 4 2.5"/>'],
+    "office": ["Microsoft 365", '<path d="M4 18h9v-12l-5 2v5l-4 2v-8l9 -4l7 2v13l-7 3l-9 -3"/>'],
+    "onedrive": ["OneDrive", '<path d="M18.456 10.45a6.45 6.45 0 0 0 -12 -2.151a4.857 4.857 0 0 0 -4.44 5.241a4.856 4.856 0 0 0 5.236 4.444h10.751a3.771 3.771 0 0 0 3.99 -3.54a3.772 3.772 0 0 0 -3.538 -3.992l.001 -.002"/>'],
+    "windows": ["Windows", '<path d="M17.8 20l-12 -1.5c-1 -.1 -1.8 -.9 -1.8 -1.9v-9.2c0 -1 .8 -1.8 1.8 -1.9l12 -1.5c1.2 -.1 2.2 .8 2.2 1.9v12.1c0 1.2 -1.1 2.1 -2.2 1.9l0 .1"/><path d="M12 5l0 14"/><path d="M4 12l16 0"/>'],
+    "apple": ["Apple", '<path d="M8.286 7.008c-3.216 0 -4.286 3.23 -4.286 5.92c0 3.229 2.143 8.072 4.286 8.072c1.165 -.05 1.799 -.538 3.214 -.538c1.406 0 1.607 .538 3.214 .538s4.286 -3.229 4.286 -5.381c-.03 -.011 -2.649 -.434 -2.679 -3.23c-.02 -2.335 2.589 -3.179 2.679 -3.228c-1.096 -1.606 -3.162 -2.113 -3.75 -2.153c-1.535 -.12 -3.032 1.077 -3.75 1.077c-.729 0 -2.036 -1.077 -3.214 -1.077"/><path d="M12 4a2 2 0 0 0 2 -2a2 2 0 0 0 -2 2"/>'],
+    "dropbox": ["Dropbox", '<path d="M7.5 10.625l-4.5 -2.813l4.5 -2.812l4.5 2.813m-4.5 2.812l4.5 -2.813m-4.5 2.813l-4.5 2.823l4.5 2.802m0 -5.625l4.5 2.823m0 -5.636l4.5 2.791l4.5 -2.812l-4.5 -2.791l-4.5 2.813m-4.5 8.438l4.5 -2.802m-4.5 2.802v1.123l4.5 2.627l4.5 -2.627v-1.123m-4.5 -2.802l4.5 -2.823l4.5 2.823l-4.5 2.802m-4.5 -2.802l4.5 2.802"/>'],
+    "notion": ["Notion", '<path d="M11 17.5v-6.5h.5l4 6h.5v-6.5"/><path d="M19.077 20.071l-11.53 .887a1 1 0 0 1 -.876 -.397l-2.471 -3.294a1 1 0 0 1 -.2 -.6v-10.741a1 1 0 0 1 .923 -.997l11.389 -.876a2 2 0 0 1 1.262 .33l1.535 1.023a2 2 0 0 1 .891 1.664v12.004a1 1 0 0 1 -.923 .997"/><path d="M4.5 5.5l2.5 2.5"/><path d="M20 7l-13 1v12.5"/>'],
+    "evernote": ["Evernote", '<path d="M4 8h5v-5"/><path d="M17.9 19c.6 -2.5 1.1 -5.471 1.1 -9c0 -4.5 -2 -5 -3 -5c-1.906 0 -3 -.5 -3.5 -1c-.354 -.354 -.5 -1 -1.5 -1h-2l-5 5c0 6 2.5 8 5 8c1 0 1.5 -.5 2 -1.5s1.414 -.326 2.5 0c1.044 .313 2.01 .255 2.5 .5c1 .5 2 1.5 2 3c0 .5 0 3 -3 3s-3 -3 -1 -3"/><path d="M15 10h1"/>'],
+    "trello": ["Trello", '<path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"/><path d="M7 7h3v10h-3l0 -10"/><path d="M14 7h3v6h-3l0 -6"/>'],
+    "asana": ["Asana", '<path d="M9 7a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M14 16a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M4 16a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>'],
+    "jira": ["Jira", '<path d="M20 4h-9v1.5a2.5 2.5 0 0 0 2.5 2.5h1.5a1 1 0 0 1 1 1v1.5a2.5 2.5 0 0 0 2.5 2.5h1.5v-9"/><path d="M15 8h-8v1.5a2.5 2.5 0 0 0 2.5 2.5h1.5a1 1 0 0 1 1 1v1.5a2.5 2.5 0 0 0 2.5 2.5h1.5v-8a1 1 0 0 0 -1 -1"/><path d="M11 12h-8v1.5a2.5 2.5 0 0 0 2.5 2.5h1.5a1 1 0 0 1 1 1v1.5a2.5 2.5 0 0 0 2.5 2.5h1.5v-8a1 1 0 0 0 -1 -1"/>'],
+    "monday": ["monday.com", '<path d="M18 15.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M9.5 7a1.5 1.5 0 0 1 1.339 2.177l-4.034 7.074c-.264 .447 -.75 .749 -1.305 .749a1.5 1.5 0 0 1 -1.271 -2.297l3.906 -6.827a1.5 1.5 0 0 1 1.365 -.876"/><path d="M16.5 7a1.5 1.5 0 0 1 1.339 2.177l-4.034 7.074c-.264 .447 -.75 .749 -1.305 .749a1.5 1.5 0 0 1 -1.271 -2.297l3.906 -6.827a1.5 1.5 0 0 1 1.365 -.876"/>'],
+    "figma": ["Figma", '<path d="M12 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M6 6a3 3 0 0 1 3 -3h6a3 3 0 0 1 3 3a3 3 0 0 1 -3 3h-6a3 3 0 0 1 -3 -3"/><path d="M9 9a3 3 0 0 0 0 6h3m-3 0a3 3 0 1 0 3 3v-15"/>'],
+    "openai": ["OpenAI", '<path d="M11.217 19.384a3.501 3.501 0 0 0 6.783 -1.217v-5.167l-6 -3.35"/><path d="M5.214 15.014a3.501 3.501 0 0 0 4.446 5.266l4.34 -2.534v-6.946"/><path d="M6 7.63c-1.391 -.236 -2.787 .395 -3.534 1.689a3.474 3.474 0 0 0 1.271 4.745l4.263 2.514l6 -3.348"/><path d="M12.783 4.616a3.501 3.501 0 0 0 -6.783 1.217v5.067l6 3.45"/><path d="M18.786 8.986a3.501 3.501 0 0 0 -4.446 -5.266l-4.34 2.534v6.946"/><path d="M18 16.302c1.391 .236 2.787 -.395 3.534 -1.689a3.474 3.474 0 0 0 -1.271 -4.745l-4.308 -2.514l-5.955 3.42"/>'],
+    "wikipedia": ["Wikipedia", '<path d="M3 4.984h2"/><path d="M8 4.984h2.5"/><path d="M14.5 4.984h2.5"/><path d="M22 4.984h-2"/><path d="M4 4.984l5.455 14.516l6.545 -14.516"/><path d="M9 4.984l6 14.516l6 -14.516"/>'],
+    "amazon": ["Amazon", '<path d="M17 12.5a15.198 15.198 0 0 1 -7.37 1.44a14.62 14.62 0 0 1 -6.63 -2.94"/><path d="M19.5 15c.907 -1.411 1.451 -3.323 1.5 -5c-1.197 -.773 -2.577 -.935 -4 -1"/>'],
+    "netflix": ["Netflix", '<path d="M9 3l10 18h-4l-10 -18l4 0"/><path d="M5 3v18h4v-10.5"/><path d="M19 21v-18h-4v10.5"/>'],
+    "spotify": ["Spotify", '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M8 11.973c2.5 -1.473 5.5 -.973 7.5 .527"/><path d="M9 15c1.5 -1 4 -1 5 .5"/><path d="M7 9c2 -1 6 -2 10 .5"/>'],
+    "twitch": ["Twitch", '<path d="M4 5v11a1 1 0 0 0 1 1h2v4l4 -4h5.584c.266 0 .52 -.105 .707 -.293l2.415 -2.414c.187 -.188 .293 -.442 .293 -.708v-8.585a1 1 0 0 0 -1 -1h-14a1 1 0 0 0 -1 1l.001 0"/><path d="M16 8l0 4"/><path d="M12 8l0 4"/>'],
+    "tiktok": ["TikTok", '<path d="M21 7.917v4.034a9.948 9.948 0 0 1 -5 -1.951v4.5a6.5 6.5 0 1 1 -8 -6.326v4.326a2.5 2.5 0 1 0 4 2v-11.5h4.083a6.005 6.005 0 0 0 4.917 4.917"/>'],
+    "pinterest": ["Pinterest", '<path d="M8 20l4 -9"/><path d="M10.7 14c.437 1.263 1.43 2 2.55 2c2.071 0 3.75 -1.554 3.75 -4a5 5 0 1 0 -9.7 1.7"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>'],
+    "medium": ["Medium", '<path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"/><path d="M8 9h1l3 3l3 -3h1"/><path d="M8 15l2 0"/><path d="M14 15l2 0"/><path d="M9 9l0 6"/><path d="M15 9l0 6"/>'],
+    "stackoverflow": ["Stack Overflow", '<path d="M4 17v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-1"/><path d="M8 16h8"/><path d="M8.322 12.582l7.956 .836"/><path d="M8.787 9.168l7.826 1.664"/><path d="M10.096 5.764l7.608 2.472"/>'],
+    "feedly": ["Feedly", '<path d="M7.833 12.278l4.445 -4.445"/><path d="M10.055 14.5l2.223 -2.222"/><path d="M12.278 16.722l.555 -.555"/><path d="M19.828 14.828a4 4 0 0 0 0 -5.656l-5 -5a4 4 0 0 0 -5.656 0l-5 5a4 4 0 0 0 0 5.656l6.171 6.172h3.314l6.171 -6.172"/>'],
+    "pocket": ["Pocket", '<path d="M5 4h14a2 2 0 0 1 2 2v6a9 9 0 0 1 -18 0v-6a2 2 0 0 1 2 -2"/><path d="M8 11l4 4l4 -4"/>'],
+    "nextcloud": ["Nextcloud", '<path d="M7 12a5 5 0 1 0 10 0a5 5 0 1 0 -10 0"/><path d="M2 12.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/><path d="M17 12.5a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0"/>'],
+    "paypal": ["PayPal", '<path d="M10 13l2.5 0c2.5 0 5 -2.5 5 -5c0 -3 -1.9 -5 -5 -5h-5.5c-.5 0 -1 .5 -1 1l-2 14c0 .5 .5 1 1 1h2.8l1.2 -5c.1 -.6 .4 -1 1 -1m7.5 -5.8c1.7 1 2.5 2.8 2.5 4.8c0 2.5 -2.5 4.5 -5 4.5h-2.6l-.6 3.6a1 1 0 0 1 -1 .8l-2.7 0a.5 .5 0 0 1 -.5 -.6l.2 -1.4"/>'],
+    "booking": ["Booking.com", '<path d="M4 18v-9.5a4.5 4.5 0 0 1 4.5 -4.5h7a4.5 4.5 0 0 1 4.5 4.5v7a4.5 4.5 0 0 1 -4.5 4.5h-9.5a2 2 0 0 1 -2 -2"/><path d="M8 12h3.5a2 2 0 1 1 0 4h-3.5v-7a1 1 0 0 1 1 -1h1.5a2 2 0 1 1 0 4h-1.5"/><path d="M16 16l.01 0"/>'],
+    "airbnb": ["Airbnb", '<path d="M12 10c-2 0 -3 1 -3 3c0 1.5 1.494 3.535 3 5.5c1 1 1.5 1.5 2.5 2s2.5 1 4.5 -.5s1.5 -3.5 .5 -6s-2.333 -5.5 -5 -9.5c-.834 -1 -1.5 -1.5 -2.503 -1.5c-1 0 -1.623 .45 -2.497 1.5c-2.667 4 -4 7 -5 9.5s-1.5 4.5 .5 6s3.5 1 4.5 .5s1.5 -1 2.5 -2c1.506 -1.965 3 -4 3 -5.5c0 -2 -1 -3 -3 -3"/>'],
+    "tripadvisor": ["Tripadvisor", '<path d="M5 13.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M16 13.5a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0 -3 0"/><path d="M17.5 9a4.5 4.5 0 1 0 3.5 1.671l1 -1.671h-4.5"/><path d="M6.5 9a4.5 4.5 0 1 1 -3.5 1.671l-1 -1.671h4.5"/><path d="M10.5 15.5l1.5 2l1.5 -2"/><path d="M9 6.75c2 -.667 4 -.667 6 0"/>'],
+    "strava": ["Strava", '<path d="M15 13l-5 -10l-5 10m6 0l4 8l4 -8"/>'],
+    "yahoo": ["Yahoo", '<path d="M3 6l5 0"/><path d="M7 18l7 0"/><path d="M4.5 6l5.5 7v5"/><path d="M10 13l6 -5"/><path d="M12.5 8l5 0"/><path d="M20 11l0 4"/><path d="M20 18l0 .01"/>'],
+    "bing": ["Bing", '<path d="M5 3l4 1.5v12l6 -2.5l-2 -1l-1 -4l7 2.5v4.5l-10 5l-4 -2l0 -16"/>'],
+    "vercel": ["Vercel", '<path d="M3 19h18l-9 -15l-9 15"/>'],
+    "cloudflare": ["Cloudflare", '<path d="M13.031 7.007c2.469 -.007 3.295 1.293 3.969 2.993c4 0 4.994 3.825 5 6h-20c-.001 -1.64 1.36 -2.954 3 -3c0 -1.5 1 -3 3 -3c.66 -1.942 2.562 -2.986 5.031 -2.993"/><path d="M12 13h6"/><path d="M17 10l-2.5 6"/>'],
+    "aws": ["AWS", '<path d="M17 18.5a15.198 15.198 0 0 1 -7.37 1.44a14.62 14.62 0 0 1 -6.63 -2.94"/><path d="M19.5 21c.907 -1.411 1.451 -3.323 1.5 -5c-1.197 -.773 -2.577 -.935 -4 -1"/><path d="M3 11v-4.5a1.5 1.5 0 0 1 3 0v4.5"/><path d="M3 9h3"/><path d="M9 5l1.2 6l1.8 -4l1.8 4l1.2 -6"/><path d="M18 10.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75"/>'],
+    "azure": ["Azure", '<path d="M6 7.5l-4 9.5h4l6 -15l-6 5.5"/><path d="M22 20l-7 -15l-3 7l4 5l-8 3l14 0"/>'],
+    "docker": ["Docker", '<path d="M22 12.54c-1.804 -.345 -2.701 -1.08 -3.523 -2.94c-.487 .696 -1.102 1.568 -.92 2.4c.028 .238 -.32 1 -.557 1h-14c0 5.208 3.164 7 6.196 7c4.124 .022 7.828 -1.376 9.854 -5c1.146 -.101 2.296 -1.505 2.95 -2.46"/><path d="M5 10h3v3h-3l0 -3"/><path d="M8 10h3v3h-3l0 -3"/><path d="M11 10h3v3h-3l0 -3"/><path d="M8 7h3v3h-3l0 -3"/><path d="M11 7h3v3h-3l0 -3"/><path d="M11 4h3v3h-3l0 -3"/><path d="M4.571 18c1.5 0 2.047 -.074 2.958 -.78"/><path d="M10 16l0 .01"/>'],
+    "npm": ["npm", '<path d="M1 8h22v7h-12v2h-4v-2h-6l0 -7"/><path d="M7 8v7"/><path d="M14 8v7"/><path d="M17 11v4"/><path d="M4 11v4"/><path d="M11 11v1"/><path d="M20 11v4"/>'],
+    "vscode": ["VS Code", '<path d="M16 3v18l4 -2.5v-13l-4 -2.5"/><path d="M9.165 13.903l-4.165 3.597l-2 -1l4.333 -4.5m1.735 -1.802l6.932 -7.198v5l-4.795 4.141"/><path d="M16 16.5l-11 -10l-2 1l13 13.5"/>'],
+    "ycombinator": ["Hacker News", '<path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"/><path d="M8 7l4 6l4 -6"/><path d="M12 17l0 -4"/>'],
+    "nytimes": ["New York Times", '<path d="M11.036 5.058a8 8 0 1 0 8.706 9.965"/><path d="M12 21v-11l-7.5 4"/><path d="M17.5 3a2.5 2.5 0 1 1 0 5l-11 -5a2.5 2.5 0 0 0 -.67 4.91"/><path d="M9 12v8"/><path d="M16 13h-.01"/>'],
+    "guardian": ["The Guardian", '<path d="M14 13h6"/><path d="M4 12c0 -9.296 9.5 -9 9.5 -9c-2.808 0 -4.5 4.373 -4.5 9s1.763 8.976 4.572 8.976c0 .023 -9.572 1.092 -9.572 -8.976"/><path d="M14.5 3c1.416 0 3.853 1.16 4.5 2v3.5"/><path d="M15 13v8s2.77 -.37 4 -2v-6"/><path d="M13.5 21h1.5"/><path d="M13.5 3h1"/>'],
+    "steam": ["Steam", '<path d="M16.5 5a4.5 4.5 0 1 1 -.653 8.953l-4.347 3.009l0 .038a3 3 0 0 1 -2.824 3l-.176 0a3 3 0 0 1 -2.94 -2.402l-2.56 -1.098v-3.5l3.51 1.755a2.989 2.989 0 0 1 2.834 -.635l2.727 -3.818a4.5 4.5 0 0 1 4.429 -5.302"/><path d="M15.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" fill="currentColor"/>'],
+    "xbox": ["Xbox", '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M6.5 5c7.72 2.266 10.037 7.597 12.5 12.5"/><path d="M17.5 5c-7.72 2.266 -10.037 7.597 -12.5 12.5"/>'],
+    "deezer": ["Deezer", '<path d="M3 16.5h2v.5h-2l0 -.5"/><path d="M8 16.5h2.5v.5h-2.5l0 -.5"/><path d="M16 17h-2.5v-.5h2.5l0 .5"/><path d="M21.5 17h-2.5v-.5h2.5l0 .5"/><path d="M21.5 13h-2.5v.5h2.5l0 -.5"/><path d="M21.5 9.5h-2.5v.5h2.5l0 -.5"/><path d="M21.5 6h-2.5v.5h2.5l0 -.5"/><path d="M16 13h-2.5v.5h2.5l0 -.5"/><path d="M8 13.5h2.5v-.5h-2.5l0 .5"/><path d="M8 9.5h2.5v.5h-2.5l0 -.5"/>'],
+    "soundcloud": ["SoundCloud", '<path d="M17 11h1c1.38 0 3 1.274 3 3c0 1.657 -1.5 3 -3 3l-6 0v-10c3 0 4.5 1.5 5 4"/><path d="M9 8l0 9"/><path d="M6 17l0 -7"/><path d="M3 16l0 -2"/>'],
+    "vimeo": ["Vimeo", '<path d="M3 8.5l1 1s1.5 -1.102 2 -.5c.509 .609 1.863 7.65 2.5 9c.556 1.184 1.978 2.89 4 1.5c2 -1.5 7.5 -5.5 8.5 -11.5c.444 -2.661 -1 -4 -2.5 -4c-2 0 -4.047 1.202 -4.5 4c2.05 -1.254 2.551 1 1.5 3c-1.052 2 -2 3 -2.5 3c-.49 0 -.924 -1.165 -1.5 -3.5c-.59 -2.42 -.5 -6.5 -3 -6.5s-5.5 4.5 -5.5 4.5"/>'],
+    "flickr": ["Flickr", '<path d="M4 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M14 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>'],
+    "unsplash": ["Unsplash", '<path d="M4 11h5v4h6v-4h5v9h-16v-9"/><path d="M9 4h6v4h-6l0 -4"/>'],
+    "dribbble": ["Dribbble", '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M9 3.6c5 6 7 10.5 7.5 16.2"/><path d="M6.4 19c3.5 -3.5 6 -6.5 14.5 -6.4"/><path d="M3.1 10.75c5 0 9.814 -.38 15.314 -5"/>'],
+    "behance": ["Behance", '<path d="M3 18v-12h4.5a3 3 0 0 1 0 6a3 3 0 0 1 0 6h-4.5"/><path d="M3 12l4.5 0"/><path d="M14 13h7a3.5 3.5 0 0 0 -7 0v2a3.5 3.5 0 0 0 6.64 1"/><path d="M16 6l3 0"/>'],
+    "wordpress": ["WordPress", '<path d="M9.5 9h3"/><path d="M4 9h2.5"/><path d="M11 9l3 11l4 -9"/><path d="M5.5 9l3.5 11l3 -7"/><path d="M18 11c.177 -.528 1 -1.364 1 -2.5c0 -1.78 -.776 -2.5 -1.875 -2.5c-.898 0 -1.125 .812 -1.125 1.429c0 1.83 2 2.058 2 3.571"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>'],
+    "tumblr": ["Tumblr", '<path d="M14 21h4v-4h-4v-6h4v-4h-4v-4h-4v1a3 3 0 0 1 -3 3h-1v4h4v6a4 4 0 0 0 4 4"/>']
+  };
+  const GENERIC_ICONS = {
+    "mail": ["Mail", '<path d="M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10"/><path d="M3 7l9 6l9 -6"/>'],
+    "calendar": ["Calendar", '<path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M11 15h1"/><path d="M12 15v3"/>'],
+    "cloud": ["Cloud", '<path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"/>'],
+    "file-text": ["Document", '<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/>'],
+    "message-circle": ["Chat", '<path d="M3 20l1.3 -3.9c-2.324 -3.437 -1.426 -7.872 2.1 -10.374c3.526 -2.501 8.59 -2.296 11.845 .48c3.255 2.777 3.695 7.266 1.029 10.501c-2.666 3.235 -7.615 4.215 -11.574 2.293l-4.7 1"/>'],
+    "code": ["Code", '<path d="M7 8l-4 4l4 4"/><path d="M17 8l4 4l-4 4"/><path d="M14 4l-4 16"/>'],
+    "search": ["Search", '<path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/>'],
+    "link": ["Link", '<path d="M9 15l6 -6"/><path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464"/><path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463"/>'],
+    "home": ["Home", '<path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/>'],
+    "news": ["News", '<path d="M16 6h3a1 1 0 0 1 1 1v11a2 2 0 0 1 -4 0v-13a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1v12a3 3 0 0 0 3 3h11"/><path d="M8 8l4 0"/><path d="M8 12l4 0"/><path d="M8 16l4 0"/>'],
+    "shopping-cart": ["Shopping", '<path d="M4 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M15 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/>'],
+    "music": ["Music", '<path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M9 17v-13h10v13"/><path d="M9 8h10"/>'],
+    "photo": ["Photos", '<path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/>'],
+    "video": ["Video", '<path d="M15 10l4.553 -2.276a1 1 0 0 1 1.447 .894v6.764a1 1 0 0 1 -1.447 .894l-4.553 -2.276v-4"/><path d="M3 8a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8"/>'],
+    "map-pin": ["Map", '<path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"/>'],
+    "book": ["Book", '<path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6l0 13"/><path d="M12 6l0 13"/><path d="M21 6l0 13"/>'],
+    "building-bank": ["Bank", '<path d="M3 21l18 0"/><path d="M3 10l18 0"/><path d="M5 6l7 -3l7 3"/><path d="M4 10l0 11"/><path d="M20 10l0 11"/><path d="M8 14l0 3"/><path d="M12 14l0 3"/><path d="M16 14l0 3"/>'],
+    "briefcase": ["Work", '<path d="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9"/><path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"/><path d="M12 12l0 .01"/><path d="M3 13a20 20 0 0 0 18 0"/>'],
+    "school": ["School", '<path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/><path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"/>'],
+    "server": ["Server", '<path d="M3 7a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-2"/><path d="M3 15a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -2"/><path d="M7 8l0 .01"/><path d="M7 16l0 .01"/>'],
+    "chart-bar": ["Charts", '<path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"/><path d="M4 20h14"/>'],
+    "rss": ["RSS", '<path d="M4 19a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M4 4a16 16 0 0 1 16 16"/><path d="M4 11a9 9 0 0 1 9 9"/>'],
+    "world": ["Web", '<path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/>'],
+    "star": ["Star", '<path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"/>'],
+    "bookmark": ["Bookmark", '<path d="M18 7v14l-6 -4l-6 4v-14a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4"/>'],
+    "users": ["People", '<path d="M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/>'],
+    "settings": ["Settings", '<path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/>'],
+    "terminal": ["Terminal", '<path d="M5 7l5 5l-5 5"/><path d="M12 19l7 0"/>'],
+    "device-tv": ["TV", '<path d="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9"/><path d="M16 3l-4 4l-4 -4"/>'],
+    "checklist": ["Tasks", '<path d="M9.615 20h-2.615a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8"/><path d="M14 19l2 2l4 -4"/><path d="M9 8h4"/><path d="M9 12h2"/>'],
+    "notes": ["Notes", '<path d="M5 5a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2l0 -14"/><path d="M9 7l6 0"/><path d="M9 11l6 0"/><path d="M9 15l4 0"/>'],
+    "database": ["Database", '<path d="M4 6a8 3 0 1 0 16 0a8 3 0 1 0 -16 0"/><path d="M4 6v6a8 3 0 0 0 16 0v-6"/><path d="M4 12v6a8 3 0 0 0 16 0v-6"/>'],
+    "lock": ["Lock", '<path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6"/><path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0"/><path d="M8 11v-4a4 4 0 1 1 8 0v4"/>'],
+    "wallet": ["Wallet", '<path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"/><path d="M20 12v4h-4a2 2 0 0 1 0 -4h4"/>'],
+    "plane": ["Travel", '<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3l4 7"/>'],
+    "heart": ["Heart", '<path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/>'],
+    "robot": ["AI", '<path d="M6 6a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -4"/><path d="M12 2v2"/><path d="M9 12v9"/><path d="M15 12v9"/><path d="M5 16l4 -2"/><path d="M15 14l4 2"/><path d="M9 18h6"/><path d="M10 8v.01"/><path d="M14 8v.01"/>']
+  };
+  const LINK_ICONS = { ...GENERIC_ICONS, ...BRAND_ICONS };
+  const linkSvg = id => svgIcon((LINK_ICONS[id] || LINK_ICONS.link)[1]);
+
+  // Marchio riconosciuto dall'indirizzo: si confronta "dominio/percorso" (senza www.).
+  // Le voci più specifiche vengono prima (es. Gmail prima di Google, AWS prima di Amazon).
+  const dom = (...d) => new RegExp(`(^|\\.)(${d.map(x => x.replace(/\./g, "\\.")).join("|")})(/|$)`);
+  const BRAND_HOSTS = [
+    ["gmail", /^mail\.google\./],
+    ["calendar", /^calendar\.google\./],
+    ["google-drive", /^(drive|docs|sheets|slides)\.google\./],
+    ["google-maps", /^maps\.google\.|^google\.[a-z.]+\/maps/],
+    ["google-photos", /^photos\.google\./],
+    ["google-play", /^play\.google\./],
+    ["youtube", dom("youtube.com", "youtu.be")],
+    ["google", /(^|\.)google\.[a-z.]+(\/|$)/],
+    ["calendar", /^outlook\.[a-z.]+\/calendar/],
+    ["mail", /^outlook\.(live\.com|office\.com|office365\.com|cloud\.microsoft)/],
+    ["teams", /^teams\.(microsoft\.com|live\.com|cloud\.microsoft)/],
+    ["onedrive", /onedrive\.|sharepoint\.com|^1drv\.ms/],
+    ["office", dom("office.com", "microsoft365.com", "cloud.microsoft")],
+    ["aws", dom("aws.amazon.com", "amazonaws.com")],
+    ["amazon", /(^|\.)amazon\.[a-z.]+(\/|$)/],
+    ["mastodon", /(^|\.)(mastodon\.[a-z]+|mstdn\.[a-z]+|mas\.to|fosstodon\.org|hachyderm\.io)(\/|$)/],
+    ["github", dom("github.com")], ["gitlab", dom("gitlab.com")], ["bitbucket", dom("bitbucket.org")],
+    ["bluesky", dom("bsky.app")], ["threads", dom("threads.net", "threads.com")], ["x", dom("x.com", "twitter.com")],
+    ["facebook", dom("facebook.com", "fb.com")], ["instagram", dom("instagram.com")], ["linkedin", dom("linkedin.com")],
+    ["reddit", dom("reddit.com")], ["whatsapp", dom("whatsapp.com", "wa.me")], ["telegram", dom("telegram.org", "t.me")],
+    ["signal", dom("signal.org")], ["messenger", dom("messenger.com")], ["slack", dom("slack.com")],
+    ["discord", dom("discord.com", "discord.gg")], ["zoom", dom("zoom.us")], ["skype", dom("skype.com")],
+    ["windows", dom("windows.com")], ["apple", dom("apple.com", "icloud.com")], ["dropbox", dom("dropbox.com")],
+    ["notion", dom("notion.so", "notion.com", "notion.site")], ["evernote", dom("evernote.com")], ["trello", dom("trello.com")],
+    ["asana", dom("asana.com")], ["jira", dom("atlassian.net")], ["monday", dom("monday.com")], ["figma", dom("figma.com")],
+    ["openai", dom("openai.com", "chatgpt.com")], ["wikipedia", dom("wikipedia.org")], ["netflix", dom("netflix.com")],
+    ["spotify", dom("spotify.com")], ["twitch", dom("twitch.tv")], ["tiktok", dom("tiktok.com")],
+    ["pinterest", /(^|\.)pinterest\.[a-z.]+(\/|$)/], ["medium", dom("medium.com")], ["stackoverflow", dom("stackoverflow.com")],
+    ["feedly", dom("feedly.com")], ["pocket", dom("getpocket.com")], ["nextcloud", dom("nextcloud.com")],
+    ["paypal", /(^|\.)paypal\.[a-z.]+(\/|$)/], ["booking", dom("booking.com")], ["airbnb", /(^|\.)airbnb\.[a-z.]+(\/|$)/],
+    ["tripadvisor", /(^|\.)tripadvisor\.[a-z.]+(\/|$)/], ["strava", dom("strava.com")], ["yahoo", /(^|\.)yahoo\.[a-z.]+(\/|$)/],
+    ["bing", dom("bing.com")], ["vercel", dom("vercel.com")], ["cloudflare", dom("cloudflare.com")],
+    ["azure", dom("azure.com", "portal.azure.com")], ["docker", dom("docker.com")], ["npm", dom("npmjs.com")],
+    ["vscode", dom("vscode.dev")], ["ycombinator", dom("news.ycombinator.com")], ["nytimes", dom("nytimes.com")],
+    ["guardian", dom("theguardian.com")], ["steam", dom("steampowered.com", "steamcommunity.com")], ["xbox", dom("xbox.com")],
+    ["deezer", dom("deezer.com")], ["soundcloud", dom("soundcloud.com")], ["vimeo", dom("vimeo.com")],
+    ["flickr", dom("flickr.com")], ["unsplash", dom("unsplash.com")], ["dribbble", dom("dribbble.com")],
+    ["behance", dom("behance.net")], ["wordpress", dom("wordpress.com", "wordpress.org")], ["tumblr", dom("tumblr.com")]
+  ];
+  function brandFor(url) {
+    let u; try { u = new URL(url); } catch (e) { return null; }
+    const s = u.hostname.replace(/^www\./, "") + u.pathname;
+    const hit = BRAND_HOSTS.find(([, re]) => re.test(s));
+    return hit ? hit[0] : null;
+  }
+  // icona generica scelta da parole nel nome o nell'indirizzo
+  function genericFor(l, fallback = "link") {
+    const t = ((l.label || "") + " " + (l.url || "")).toLowerCase();
+    if (/mail|posta|outlook/.test(t)) return "mail";
+    if (/calend|agenda/.test(t)) return "calendar";
+    if (/drive|cloud|sharepoint|storage/.test(t)) return "cloud";
+    if (/chat|messag/.test(t)) return "message-circle";
+    if (/git|code|dev/.test(t)) return "code";
+    if (/doc|word|excel|sheet|wiki/.test(t)) return "file-text";
+    if (/news|notizie|giornale/.test(t)) return "news";
+    if (/shop|negozio|store/.test(t)) return "shopping-cart";
+    if (/bank|banca/.test(t)) return "building-bank";
+    if (/map|mappe/.test(t)) return "map-pin";
+    return fallback;
+  }
+  // Icona di un collegamento o di un motore di ricerca: l.icon è "auto", "favicon"
+  // o un id di LINK_ICONS. "auto": marchio riconosciuto dall'indirizzo, altrimenti
+  // favicon del sito. Se si usa la favicon, id è l'icona generica da mostrare finché manca
+  // (fallback: "link" per i collegamenti, "search" per i motori).
+  function resolveLinkIcon(l, fallback) {
+    const choice = l.icon || "auto";
+    if (LINK_ICONS[choice]) return { id: choice, favicon: false };
+    const brand = choice === "auto" && brandFor(l.url);
+    if (brand) return { id: brand, favicon: false };
+    return { id: genericFor(l, fallback), favicon: true };
+  }
+  // markup dell'icona, con la favicon se già in memoria
+  function linkIconHtml(l, fallback) {
+    const r = resolveLinkIcon(l, fallback);
+    const cached = r.favicon && faviconCache[hostOf(l.url)];
+    return cached && cached.m ? `<span class="favicon" style="--fav: url(${cached.m})"></span>` : linkSvg(r.id);
+  }
+  // elemento dell'icona per la pagina: se serve la favicon la scarica (o la aggiorna)
+  // e si sostituisce appena è pronta
+  function itemIcon(l, fallback) {
+    const t = document.createElement("template");
+    t.innerHTML = linkIconHtml(l, fallback);
+    const el = t.content.firstElementChild;
+    const host = hostOf(l.url), cached = faviconCache[host];
+    if (host && resolveLinkIcon(l, fallback).favicon &&
+        (!cached || Date.now() - cached.t > (cached.m ? FAVICON_TTL : FAVICON_RETRY)))
+      loadFavicon(host).then(() => {
+        if (!el.isConnected) return;
+        t.innerHTML = linkIconHtml(l, fallback);
+        el.replaceWith(t.content.firstElementChild);
+      });
+    return el;
   }
 
   // ----- Ricerche e collegamenti nella pagina -----
@@ -1161,19 +1482,17 @@
       const f = document.createElement("form");
       f.className = "search";
       f.innerHTML = `
-        <label></label>
         <div class="search-field">
-          ${svgIcon(ICONS.search)}
           <input type="search" autocomplete="off">
           <button type="submit">${svgIcon(ICONS.arrow)}</button>
         </div>`;
-      const id = "q-" + i;
-      const label = f.querySelector("label"), input = f.querySelector("input");
-      label.textContent = s.label;
-      label.htmlFor = id;
-      input.id = id;
-      input.placeholder = "Cerca su " + s.label;
-      f.querySelector("button").setAttribute("aria-label", "Cerca su " + s.label);
+      const input = f.querySelector("input");
+      f.firstElementChild.prepend(itemIcon(s, "search"));  // icona del motore al posto della lente
+      input.id = "q-" + i;
+      // nessun titolo sopra il campo: il nome del motore è nel testo segnaposto
+      input.placeholder = fmtText(T.searchOn, s.label);
+      input.setAttribute("aria-label", fmtText(T.searchOn, s.label));
+      f.querySelector("button").setAttribute("aria-label", fmtText(T.searchOn, s.label));
       f.addEventListener("submit", e => {
         e.preventDefault();
         const q = input.value.trim();
@@ -1191,18 +1510,115 @@
     settings.links.forEach(l => {
       const a = document.createElement("a");
       a.href = l.url;
-      a.innerHTML = svgIcon(linkIcon(l));
-      a.append(l.label);
+      a.append(itemIcon(l, "link"), l.label);
       nav.appendChild(a);
     });
     nav.hidden = settings.links.length === 0;
+    pruneFavicons();
+  }
+
+  // ----- Favicon dei collegamenti -----
+  // Scaricate da icon.horse (permette di leggere i pixel grazie a CORS e segnala con
+  // l'intestazione X-Icon-Fallback quando non trova l'icona e ne genera una con una lettera).
+  // L'immagine diventa una sagoma monocromatica (maschera alfa) salvata in localStorage per
+  // dominio, così la pagina la mostra subito e anche senza rete.
+  const FAVICON_KEY = "startpage-favicons";
+  const FAVICON_TTL = 30 * 86400000;   // icone trovate: aggiornate ogni 30 giorni
+  const FAVICON_RETRY = 86400000;      // icone non trovate: si riprova dopo un giorno
+  let faviconCache = {};
+  try { faviconCache = JSON.parse(localStorage.getItem(FAVICON_KEY) || "{}") || {}; } catch (e) {}
+  const saveFavicons = () => { try { localStorage.setItem(FAVICON_KEY, JSON.stringify(faviconCache)); } catch (e) {} };
+  const hostOf = url => { try { return new URL(url).hostname; } catch (e) { return ""; } };
+  // tiene in memoria solo i domini dei collegamenti attuali
+  function pruneFavicons() {
+    const hosts = new Set([...settings.links, ...settings.searches].map(l => hostOf(l.url)));
+    let changed = false;
+    Object.keys(faviconCache).forEach(h => { if (!hosts.has(h)) { delete faviconCache[h]; changed = true; } });
+    if (changed) saveFavicons();
+  }
+
+  const faviconPending = {};
+  function loadFavicon(host) {
+    return faviconPending[host] ||= (async () => {
+      try {
+        const res = await fetch(`https://icon.horse/icon/${encodeURIComponent(host)}`);
+        let mask = null;
+        if (res.ok && res.headers.get("X-Icon-Fallback") !== "true") mask = await toMask(await res.blob());
+        faviconCache[host] = { m: mask, t: Date.now() };
+        saveFavicons();
+        return mask;
+      } catch (e) {
+        return null;  // senza rete: nessun salvataggio, si riprova alla prossima apertura
+      } finally {
+        delete faviconPending[host];
+      }
+    })();
+  }
+
+  // Converte l'immagine in una sagoma: nero con trasparenza, da usare come maschera CSS.
+  // - Sfondo trasparente: conta l'opacità dei pixel; le parti quasi bianche diventano
+  //   buchi, così il disegno interno resta visibile (es. la "m" bianca di Mastodon).
+  //   Se così l'icona sparisce (disegno tutto bianco), si usa la sola opacità.
+  // - Sfondo pieno: conta la differenza netta di luminosità rispetto al colore degli angoli.
+  async function toMask(blob) {
+    const url = URL.createObjectURL(blob);
+    try {
+      const img = new Image();
+      await new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; img.src = url; });
+      const S = 64, c = document.createElement("canvas");
+      c.width = c.height = S;
+      const g = c.getContext("2d", { willReadFrequently: true });
+      g.drawImage(img, 0, 0, S, S);
+      const data = g.getImageData(0, 0, S, S), d = data.data;
+      const lum = i => (0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2]) / 255;
+      const sat = i => (Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2])) / 255;
+      const corners = [0, S - 1, S * (S - 1), S * S - 1].map(p => p * 4);
+      const opaqueBg = corners.reduce((s, i) => s + d[i + 3], 0) / 4 > 128;
+      const bgLum = corners.reduce((s, i) => s + lum(i), 0) / 4;
+      const ink = new Float32Array(S * S);
+      const fill = carve => {
+        let total = 0;
+        for (let p = 0; p < S * S; p++) {
+          const i = p * 4, a = d[i + 3] / 255;
+          let v;
+          // le piccole differenze (sfumature dello sfondo) non contano, solo il disegno netto
+          if (opaqueBg) v = a * Math.max(0, Math.min(1, (Math.abs(lum(i) - bgLum) - 0.15) / 0.2));
+          else if (carve) v = a * (1 - Math.max(0, Math.min(1, (lum(i) - 0.8) / 0.15)) * (sat(i) < 0.15 ? 1 : 0));
+          else v = a;
+          ink[p] = v; total += v;
+        }
+        return total / (S * S);  // copertura media
+      };
+      if (fill(true) < 0.04 && !opaqueBg) fill(false);
+      if (ink.reduce((s, v) => s + v, 0) / (S * S) < 0.02) return null;  // icona vuota o uniforme
+      for (let p = 0; p < S * S; p++) {
+        d[p * 4] = d[p * 4 + 1] = d[p * 4 + 2] = 0;
+        d[p * 4 + 3] = Math.round(ink[p] * 255);
+      }
+      g.putImageData(data, 0, 0);
+      return c.toDataURL("image/png");
+    } catch (e) {
+      return null;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+  // disegna tutto ciò che cambia una volta al giorno (o con le preferenze)
+  let lastDay = null;
+  function renderDay(now) {
+    lastDay = key(now);
+    renderDate(now);
+    renderCalendars(now);
+    renderYear(now);
+    renderSunDay(now);
+    renderFavicon(now);
   }
   function applySettings() {
+    applyLanguage(settings.language);
     applyTheme(settings.theme);
     renderSearches();
     renderLinks();
-    renderYear(new Date());   // marcatori sulla linea dell'anno
-    renderSunDay(new Date()); // la posizione cambia alba, tramonto e percorso
+    renderDay(new Date());  // lingua, marcatori e posizione cambiano date, calendari, anno e sole
     renderSunDot(new Date());
   }
   applySettings();
@@ -1228,6 +1644,36 @@
   const iconBtn = (icon, action, label, disabled) =>
     `<button class="icon-btn" type="button" data-action="${action}" aria-label="${label}" title="${label}"${disabled ? " disabled" : ""}>${svgIcon(ICONS[icon])}</button>`;
 
+  // Pannello per scegliere l'icona di un motore o di un collegamento. Uno solo aperto
+  // alla volta: iconPicker vale "search:2", "link:0"… oppure "" se chiuso.
+  let iconPicker = "";
+  const pickBtn = (kind, item, i) => {
+    const open = iconPicker === `${kind}:${i}`;
+    return `<button class="icon-pick" type="button" data-action="pick-icon" aria-label="Choose icon" title="Choose icon" aria-expanded="${open}">${linkIconHtml(item, kind)}</button>`;
+  };
+  function iconPanel(kind, l, i) {
+    const cur = l.icon || "auto";
+    const choice = (id, [label, svg]) =>
+      `<button class="icon-choice" type="button" data-action="set-icon" data-icon="${id}" title="${label}" aria-label="${label}" aria-pressed="${cur === id}">${svgIcon(svg)}</button>`;
+    const grid = icons => `<div class="icon-grid">${Object.entries(icons)
+      .sort((a, b) => a[1][0].localeCompare(b[1][0])).map(([id, v]) => choice(id, v)).join("")}</div>`;
+    const panel = document.createElement("div");
+    panel.className = "icon-panel";
+    panel.dataset.index = i;
+    panel.dataset.kind = kind;
+    panel.innerHTML = `
+      <div class="icon-panel-head">
+        <input type="text" class="icon-filter" placeholder="Filter icons…" aria-label="Filter icons">
+        <button class="btn" type="button" data-action="set-icon" data-icon="auto" aria-pressed="${cur === "auto"}">Automatic</button>
+        <button class="btn" type="button" data-action="set-icon" data-icon="favicon" aria-pressed="${cur === "favicon"}">Site icon</button>
+      </div>
+      <div class="icon-scroll">
+        <div class="icon-group">Brands</div>${grid(BRAND_ICONS)}
+        <div class="icon-group">Generic</div>${grid(GENERIC_ICONS)}
+      </div>`;
+    return panel;
+  }
+
   function renderDraft() {
     prefsError.textContent = "";
     // ricerche
@@ -1236,14 +1682,16 @@
       const row = document.createElement("div");
       row.className = "row search-row";
       row.dataset.index = i;
+      row.dataset.kind = "search";
       const opts = ENGINES.map(e => `<option value="${e.id}">${e.label}</option>`).join("") +
-                   `<option value="custom">Personalizzato…</option>`;
+                   `<option value="custom">Custom…</option>`;
       row.innerHTML = `
-        <select data-field="engine" aria-label="Motore">${opts}</select>
-        <input type="text" data-field="label" aria-label="Etichetta">
-        <input type="text" class="tpl" data-field="url" aria-label="Indirizzo di ricerca" placeholder="https://esempio.com/cerca?q=%s">
-        <input type="text" class="key" data-field="key" aria-label="Tasto scorciatoia" maxlength="1">
-        ${iconBtn("trash", "del-search", "Rimuovi", draft.searches.length <= 1)}`;
+        ${pickBtn("search", s, i)}
+        <select data-field="engine" aria-label="Engine">${opts}</select>
+        <input type="text" data-field="label" aria-label="Label">
+        <input type="text" class="tpl" data-field="url" aria-label="Search address" placeholder="https://example.com/search?q=%s">
+        <input type="text" class="key" data-field="key" aria-label="Shortcut key" maxlength="1">
+        ${iconBtn("trash", "del-search", "Remove", draft.searches.length <= 1)}`;
       row.querySelector('[data-field="engine"]').value = engineById(s.engine) ? s.engine : "custom";
       row.querySelector('[data-field="label"]').value = s.label;
       const tpl = row.querySelector('[data-field="url"]');
@@ -1251,6 +1699,7 @@
       tpl.disabled = !!engineById(s.engine);
       row.querySelector('[data-field="key"]').value = s.key || "";
       prefSearches.appendChild(row);
+      if (iconPicker === `search:${i}`) prefSearches.appendChild(iconPanel("search", s, i));
     });
     // collegamenti
     prefLinks.replaceChildren();
@@ -1258,15 +1707,18 @@
       const row = document.createElement("div");
       row.className = "row link-row";
       row.dataset.index = i;
+      row.dataset.kind = "link";
       row.innerHTML = `
-        <input type="text" data-field="label" aria-label="Etichetta">
-        <input type="text" class="url" data-field="url" aria-label="Indirizzo" placeholder="https://…">
-        ${iconBtn("up", "up-link", "Sposta su", i === 0)}
-        ${iconBtn("down", "down-link", "Sposta giù", i === draft.links.length - 1)}
-        ${iconBtn("trash", "del-link", "Rimuovi", false)}`;
+        ${pickBtn("link", l, i)}
+        <input type="text" data-field="label" aria-label="Label">
+        <input type="text" class="url" data-field="url" aria-label="Address" placeholder="https://…">
+        ${iconBtn("up", "up-link", "Move up", i === 0)}
+        ${iconBtn("down", "down-link", "Move down", i === draft.links.length - 1)}
+        ${iconBtn("trash", "del-link", "Remove", false)}`;
       row.querySelector('[data-field="label"]').value = l.label;
       row.querySelector('[data-field="url"]').value = l.url;
       prefLinks.appendChild(row);
+      if (iconPicker === `link:${i}`) prefLinks.appendChild(iconPanel("link", l, i));
     });
     // marcatori
     prefMarkers.replaceChildren();
@@ -1275,13 +1727,13 @@
       row.className = "row marker-row";
       row.dataset.index = i;
       row.innerHTML = `
-        <input type="date" data-field="from" aria-label="Dal">
-        <input type="date" data-field="to" aria-label="Al (facoltativo)">
-        <input type="text" class="mlabel" data-field="label" aria-label="Nome" placeholder="Ferie, compleanno…">
-        <div class="swatches" role="radiogroup" aria-label="Colore">${MARKER_COLORS.map(c =>
+        <input type="date" data-field="from" aria-label="From">
+        <input type="date" data-field="to" aria-label="To (optional)">
+        <input type="text" class="mlabel" data-field="label" aria-label="Name" placeholder="Holiday, birthday…">
+        <div class="swatches" role="radiogroup" aria-label="Color">${MARKER_COLORS.map(c =>
           `<label title="${c.label}"><input type="radio" name="mk-color-${i}" value="${c.id}" data-field="color" aria-label="${c.label}"${(mk.color || "grey") === c.id ? " checked" : ""}><span style="--sw: ${c.css}"></span></label>`).join("")}</div>
-        <label class="yearly"><input type="checkbox" data-field="yearly"> Ogni anno</label>
-        ${iconBtn("trash", "del-marker", "Rimuovi", false)}`;
+        <label class="yearly"><input type="checkbox" data-field="yearly"> Every year</label>
+        ${iconBtn("trash", "del-marker", "Remove", false)}`;
       row.querySelector('[data-field="from"]').value = mk.from || "";
       row.querySelector('[data-field="to"]').value = mk.to || "";
       row.querySelector('[data-field="label"]').value = mk.label || "";
@@ -1289,19 +1741,32 @@
       prefMarkers.appendChild(row);
     });
     prefsForm.querySelectorAll('input[name="theme"]').forEach(r => { r.checked = r.value === draft.theme; });
-    // posizione: numeri mostrati con la virgola, come si scrivono in italiano
-    const coord = v => typeof v === "number" ? String(v).replace(".", ",") : (v || "");
+    prefsForm.querySelector('select[name="language"]').value = draft.language;
+    const coord = v => typeof v === "number" ? String(v) : (v || "");
     prefsForm.querySelectorAll(".loc-row input").forEach(i => i.classList.remove("bad"));
     prefsForm.querySelector('input[name="locName"]').value = draft.location.name || "";
     prefsForm.querySelector('input[name="lat"]').value = coord(draft.location.lat);
     prefsForm.querySelector('input[name="lon"]').value = coord(draft.location.lon);
   }
 
+  // elenco delle lingue: "Automatic" indica quale lingua del browser verrebbe usata
+  prefsForm.querySelector('select[name="language"]').innerHTML =
+    `<option value="auto">Automatic (${I18N[resolveLanguage("auto").lang].name})</option>` +
+    Object.entries(I18N).map(([id, l]) => `<option value="${id}">${l.name}</option>`).join("");
+
   // aggiorna la bozza mentre si modifica
   prefsForm.addEventListener("input", e => {
     const el = e.target;
     el.classList.remove("bad");
     if (el.name === "theme") { draft.theme = el.value; applyTheme(draft.theme); return; } // anteprima
+    if (el.name === "language") { draft.language = el.value; return; }
+    if (el.classList.contains("icon-filter")) {  // filtra le icone per nome
+      const q = el.value.trim().toLowerCase();
+      el.closest(".icon-panel").querySelectorAll(".icon-choice").forEach(b => {
+        b.hidden = !!q && !b.title.toLowerCase().includes(q);
+      });
+      return;
+    }
     if (el.name === "locName") { draft.location.name = el.value; locNameEdited = true; return; }
     if (el.name === "lat" || el.name === "lon") { draft.location[el.name] = el.value; locNameEdited = false; return; }
     const row = el.closest(".row");
@@ -1321,27 +1786,43 @@
         item.url = eng.url;
       }
       renderDraft();  // ricrea le righe: rimetti il focus dove serve
-      prefSearches.children[+row.dataset.index]
+      prefSearches.querySelector(`.search-row[data-index="${row.dataset.index}"]`)
         .querySelector(eng ? '[data-field="engine"]' : '[data-field="url"]').focus();
       return;
     }
     item[el.dataset.field] = el.dataset.field === "key" ? el.value.toLowerCase() : el.value;
+    // l'icona automatica dipende da nome e indirizzo: aggiorna l'anteprima
+    const pick = row.querySelector(".icon-pick");
+    if (pick) pick.innerHTML = linkIconHtml(item, row.dataset.kind);
+  });
+  // Invio nel filtro sceglie la prima icona visibile invece di salvare
+  prefsForm.addEventListener("keydown", e => {
+    if (e.key !== "Enter" || !e.target.classList.contains("icon-filter")) return;
+    e.preventDefault();
+    const first = e.target.closest(".icon-panel").querySelector(".icon-choice:not([hidden])");
+    if (first) first.click();
   });
 
   prefsForm.addEventListener("click", e => {
     const btn = e.target.closest("[data-action]");
     if (!btn) return;
-    const row = btn.closest(".row");
+    const row = btn.closest("[data-index]");  // riga o pannello delle icone
     const i = row ? +row.dataset.index : -1;
-    switch (btn.dataset.action) {
+    const kind = row && row.dataset.kind;     // "search" o "link"
+    const action = btn.dataset.action;
+    const picker = iconPicker;
+    if (action !== "pick-icon") iconPicker = "";  // ogni altra azione chiude il pannello
+    switch (action) {
+      case "pick-icon": iconPicker = picker === `${kind}:${i}` ? "" : `${kind}:${i}`; break;
+      case "set-icon": (kind === "search" ? draft.searches : draft.links)[i].icon = btn.dataset.icon; break;
       case "add-search": {
         const used = new Set(draft.searches.map(s => s.engine));
         const eng = ENGINES.find(x => !used.has(x.id)) || ENGINES[0];
-        draft.searches.push({ engine: eng.id, label: eng.label, url: eng.url, key: "" });
+        draft.searches.push({ engine: eng.id, label: eng.label, url: eng.url, key: "", icon: "auto" });
         break;
       }
       case "del-search": draft.searches.splice(i, 1); break;
-      case "add-link": draft.links.push({ label: "", url: "" }); break;
+      case "add-link": draft.links.push({ label: "", url: "", icon: "auto" }); break;
       case "add-marker": draft.markers.push({ from: "", to: "", label: "", yearly: false, color: "grey" }); break;
       case "del-marker": draft.markers.splice(i, 1); break;
       case "del-link": draft.links.splice(i, 1); break;
@@ -1353,10 +1834,15 @@
       default: return;
     }
     renderDraft();
-    if (btn.dataset.action.startsWith("add-")) {
+    if (action === "pick-icon" || action === "set-icon") {
+      const panel = prefsForm.querySelector(".icon-panel");
+      if (panel) panel.querySelector(".icon-filter").focus();
+      else prefsForm.querySelector(`.row[data-kind="${kind}"][data-index="${i}"] .icon-pick`).focus();
+    }
+    if (action.startsWith("add-")) {
       const box = { "add-link": prefLinks, "add-marker": prefMarkers }[btn.dataset.action] || prefSearches;
       const last = box.lastElementChild;
-      if (last) last.querySelector(btn.dataset.action === "add-marker" ? '[data-field="from"]' : '[data-field="label"]').focus();
+      if (last) last.querySelector(action === "add-marker" ? '[data-field="from"]' : '[data-field="label"]').focus();
     }
   });
 
@@ -1369,18 +1855,18 @@
     const nameInput = prefsForm.querySelector('input[name="locName"]');
     const fail = msg => { prefsError.textContent = msg; nameInput.classList.add("bad"); nameInput.focus(); return false; };
     const q = (draft.location.name || "").split(",")[0].trim();
-    if (!q) return fail("Scrivi il nome della località da cercare.");
+    if (!q) return fail("Type the name of the place to find.");
     const text = findBtn.textContent;
     findBtn.disabled = true;
-    findBtn.textContent = "Ricerca…";
+    findBtn.textContent = "Finding…";
     prefsError.textContent = "";
     try {
-      const res = await fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&format=json&language=it&name="
+      const res = await fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&format=json&language=" + document.documentElement.lang + "&name="
                               + encodeURIComponent(q));
       if (!res.ok) throw new Error(res.status);
       const r = ((await res.json()).results || [])[0];
       if (!dlg.open) return false;  // finestra chiusa nel frattempo
-      if (!r) return fail(`Nessuna località trovata per "${q}".`);
+      if (!r) return fail(`No place found for "${q}".`);
       const round = n => Math.round(n * 1e4) / 1e4;
       draft.location = {
         name: [r.name, r.admin1 && r.admin1 !== r.name ? r.admin1 : r.country].filter(Boolean).join(", "),
@@ -1390,7 +1876,7 @@
       renderDraft();
       return true;
     } catch (e) {
-      return fail("Ricerca non riuscita (sei connesso?): inserisci le coordinate a mano.");
+      return fail("Search failed (are you online?): enter the coordinates by hand.");
     } finally {
       findBtn.disabled = false;
       findBtn.textContent = text;
@@ -1408,6 +1894,7 @@
     // coordinate resterebbero quelle della località precedente
     if (locNameEdited && (draft.location.name || "").trim() && !(await findPlace())) return;
     // le righe dei collegamenti lasciate vuote vengono scartate
+    iconPicker = "";  // le righe vuote vengono tolte: gli indici cambiano
     draft.links = draft.links.filter(l => (l.label || "").trim() || (l.url || "").trim());
     draft.markers = draft.markers.filter(m => (m.label || "").trim() || m.from || m.to);
     renderDraft();
@@ -1417,47 +1904,47 @@
       errors.push(msg);
     };
     const keys = new Set();
-    [...prefSearches.children].forEach((row, i) => {
+    [...prefSearches.querySelectorAll(":scope > .row")].forEach((row, i) => {
       const s = draft.searches[i];
       s.label = (s.label || "").trim();
-      if (!s.label) bad(row, "label", "Manca l'etichetta di un motore di ricerca.");
+      if (!s.label) bad(row, "label", "A search engine has no label.");
       if (s.engine === "custom") {
         s.url = normUrl(s.url);
         row.querySelector('[data-field="url"]').value = s.url;
-        if (!/^https?:\/\/\S*%s/.test(s.url)) bad(row, "url", "L'indirizzo personalizzato deve contenere %s.");
+        if (!/^https?:\/\/\S*%s/.test(s.url)) bad(row, "url", "A custom search address must contain %s.");
       }
       s.key = (s.key || "").trim().toLowerCase().slice(0, 1);
       if (s.key) {
-        if (keys.has(s.key)) bad(row, "key", `Il tasto "${s.key}" è usato due volte.`);
+        if (keys.has(s.key)) bad(row, "key", `The key "${s.key}" is used twice.`);
         keys.add(s.key);
       }
     });
-    [...prefLinks.children].forEach((row, i) => {
+    [...prefLinks.querySelectorAll(":scope > .row")].forEach((row, i) => {
       const l = draft.links[i];
       l.label = (l.label || "").trim();
       l.url = normUrl(l.url);
       row.querySelector('[data-field="url"]').value = l.url;
-      if (!l.label) bad(row, "label", "Manca l'etichetta di un collegamento.");
-      if (!/^https?:\/\/\S+$/.test(l.url)) bad(row, "url", "Un collegamento ha un indirizzo non valido.");
+      if (!l.label) bad(row, "label", "A link has no label.");
+      if (!/^https?:\/\/\S+$/.test(l.url)) bad(row, "url", "A link has an invalid address.");
     });
     [...prefMarkers.children].forEach((row, i) => {
       const mk = draft.markers[i];
       mk.label = (mk.label || "").trim();
       mk.yearly = !!mk.yearly;
-      if (!parseYMD(mk.from)) bad(row, "from", "Manca la data di un marcatore.");
-      if (!mk.label) bad(row, "label", "Manca il nome di un marcatore.");
+      if (!parseYMD(mk.from)) bad(row, "from", "A marker has no date.");
+      if (!mk.label) bad(row, "label", "A marker has no name.");
       // date ISO: il confronto tra stringhe segue l'ordine cronologico.
       // Per i marcatori annuali una fine "prima" dell'inizio è un periodo a cavallo di capodanno.
       if (!mk.yearly && mk.to && parseYMD(mk.from) && mk.to < mk.from)
-        bad(row, "to", "La data di fine di un marcatore è prima di quella di inizio.");
+        bad(row, "to", "A marker ends before it starts.");
     });
     const loc = draft.location;
     loc.name = (loc.name || "").trim();
     const lat = parseCoord(loc.lat, 90), lon = parseCoord(loc.lon, 180);
     const locBad = name => { prefsForm.querySelector(`input[name="${name}"]`).classList.add("bad"); };
-    if (lat === null) { locBad("lat"); errors.push("La latitudine deve essere un numero tra -90 e 90."); }
+    if (lat === null) { locBad("lat"); errors.push("Latitude must be a number between -90 and 90."); }
     else loc.lat = lat;
-    if (lon === null) { locBad("lon"); errors.push("La longitudine deve essere un numero tra -180 e 180."); }
+    if (lon === null) { locBad("lon"); errors.push("Longitude must be a number between -180 and 180."); }
     else loc.lon = lon;
     if (errors.length) {
       prefsError.textContent = errors[0];
@@ -1469,7 +1956,7 @@
     applySettings();
     if (!saveSettings(settings)) {
       // finestra lasciata aperta, altrimenti il messaggio non si vedrebbe
-      prefsError.textContent = "Impossibile salvare nel browser: le modifiche valgono solo finché la pagina resta aperta.";
+      prefsError.textContent = "Could not save in the browser: changes last only while the page stays open.";
       return;
     }
     closePrefs(true);
@@ -1477,6 +1964,7 @@
 
   function openPrefs() {
     draft = clone(settings);
+    iconPicker = "";
     locNameEdited = false;
     renderDraft();
     dlg.showModal();
@@ -1526,22 +2014,9 @@
   if (darkQuery) darkQuery.addEventListener("change", () => renderFavicon(new Date()));
 
   // ---------- Loop ----------
-  let lastDay = null;
-  function tick() {
-    const now = new Date();
-    if (key(now) !== lastDay) {
-      lastDay = key(now);
-      renderDate(now);
-      renderCalendars(now);
-      renderYear(now);
-      renderSunDay(now);
-      renderFavicon(now);
-    }
-  }
+  // controlla ogni secondo se è cambiato il giorno; il pallino del sole ogni 30 s
+  setInterval(() => { const now = new Date(); if (key(now) !== lastDay) renderDay(now); }, 1000);
   setInterval(() => renderSunDot(new Date()), 30000);
-  tick();
-  renderSunDot(new Date());
-  setInterval(tick, 1000);
 
   // Orologio analogico: movimento continuo (sweep) a ogni frame
   const sweep = () => { renderAnalog(new Date()); requestAnimationFrame(sweep); };

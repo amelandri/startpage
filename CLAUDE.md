@@ -4,19 +4,27 @@ Guida per Claude Code a questo repository.
 
 ## Progetto
 
-Startpage personale per il browser. Tutto sta in un solo file, [index.html](index.html): HTML, CSS e JavaScript inline, nessuna dipendenza esterna, nessuna build, nessun test automatico. Per provarlo si apre il file nel browser.
+Startpage personale per il browser: HTML, CSS e JavaScript semplici, nessuna dipendenza esterna, nessuna build, nessun test automatico. Per provarla si apre [index.html](index.html) nel browser (anche da disco, `file://`).
+
+File:
+- [index.html](index.html): markup e piccolo script nell'`<head>` che applica il tema prima del rendering (deve restare inline, per evitare lampi).
+- [style.css](style.css): tutto il CSS.
+- [icons.js](icons.js): dati delle icone (`BRAND_ICONS`, `GENERIC_ICONS`), costanti globali caricate prima di app.js.
+- [app.js](app.js): tutta la logica, in un'unica IIFE.
+
+Gli script sono classici, non moduli ES: `import`/`export` non funzionano aprendo la pagina da `file://` in molti browser.
 
 Lingue:
 - **Commenti nel codice** e documentazione: in italiano.
 - **Interfaccia principale**: multilingua tramite l'oggetto `I18N` (it, en, fr, de, es). Ogni nuovo testo visibile va aggiunto a tutte le lingue, non scritto direttamente nel markup o nel codice.
 - **Preferenze** (finestra, messaggi di errore, etichette dei motori e dei colori): sempre in inglese, testi scritti direttamente.
 
-## Struttura di index.html
+## Struttura del codice
 
-1. `<style>`: variabili CSS del tema in `:root`, ripetute identiche sia in `@media (prefers-color-scheme: dark)` sia in `:root[data-theme="dark"]` (se cambi un colore scuro, cambialo in entrambi i blocchi). Seguono le sezioni marcate da commenti `/* ---------- Nome ---------- */`, poi zoom per schermi grandi e breakpoint responsive (1250 px, 900 px, 700 px per le preferenze).
-2. `<script>` nell'head: applica il tema salvato prima del rendering, per evitare lampi.
-3. Markup: `.hero` (data, SVG del sole, orologio analogico SVG), `.cal-block`, `.rail` (ricerche e collegamenti), `.yearbar` (linea dell'anno), pulsante `.gear` e `<dialog class="prefs">`.
-4. `<script>` finale in un'unica IIFE, divisa in sezioni con commenti `// ---------- Nome ----------`:
+1. `style.css`: variabili CSS del tema in `:root`, ripetute identiche sia in `@media (prefers-color-scheme: dark)` sia in `:root[data-theme="dark"]` (se cambi un colore scuro, cambialo in entrambi i blocchi). Seguono le sezioni marcate da commenti `/* ---------- Nome ---------- */`, poi zoom per schermi grandi e breakpoint responsive (1250 px, 900 px, 700 px per le preferenze).
+2. `index.html`, `<script>` nell'head: applica il tema salvato prima del rendering, per evitare lampi.
+3. `index.html`, markup: `.hero` (data, SVG del sole, orologio analogico SVG), `.cal-block`, `.rail` (ricerche e collegamenti), `.yearbar` (linea dell'anno), pulsante `.gear` e `<dialog class="prefs">`.
+4. `app.js`, in un'unica IIFE divisa in sezioni con commenti `// ---------- Nome ----------`:
    - Lingue: `I18N`, `resolveLanguage` (da "auto" alla prima lingua del browser disponibile, altrimenti inglese), `applyLanguage` (imposta `T`, `LOCALE`, `DOW`, `lang`, titolo ed etichette ARIA), `fmtText` per i segnaposto `{0}`. Date, mesi e giorni vengono da `Intl` con `LOCALE`
    - Festività italiane (`easter`, `holidays` con cache per anno): la mappa contiene chiavi (`christmas`, …) tradotte con `T.holidays`
    - Utility (`isoWeek`, `dayOfYear`, `key`)

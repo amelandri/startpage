@@ -1,0 +1,554 @@
+/* ---------- Palette & tipografia (stile Instapaper) ---------- */
+:root {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --hover: #efefef;
+  --selected-bg: #eff6fd;
+  --selected-border: #cfe2f6;
+  --border: #e8e8e8;
+  --text: #1a1a1a;
+  --text-2: #555555;
+  --text-3: #8a8a8a;
+  --text-4: #b4b4b4;
+  --accent: #1f6fd1;
+  --holiday: #b45309;          /* accento per i testi: arancione scuro, leggibile sul bianco */
+  --today: var(--clock-second);
+  --chip-bg: #f0f0f0;
+  --clock-face: var(--bg);
+  --clock-ink: #111111;
+  --clock-tick: #9a9a9a;
+  --clock-second: #f0912f;
+  color-scheme: light;
+
+  --serif: "Iowan Old Style", "Charter", "Lyon Text", "Tiempos Text", Georgia, "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Inter, Arial, sans-serif;
+}
+/* Tema scuro: segue il sistema, salvo scelta manuale con l'interruttore */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #242427;
+    --surface: #2c2c30;
+    --hover: #38383d;
+    --selected-bg: #283447;
+    --selected-border: #3a5372;
+    --border: #3b3b40;
+    --text: #e8e6e3;
+    --text-2: #b9b6b1;
+    --text-3: #8c8a87;
+    --text-4: #6b6a67;
+    --accent: #5aa2f0;
+    --holiday: var(--clock-second);
+    --today: var(--clock-second);
+    --chip-bg: #37373c;
+    --clock-face: var(--bg);
+    --clock-ink: #f2f0ed;
+    --clock-tick: #77767a;
+    --clock-second: #f59a3b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #242427;
+  --surface: #2c2c30;
+  --hover: #38383d;
+  --selected-bg: #283447;
+  --selected-border: #3a5372;
+  --border: #3b3b40;
+  --text: #e8e6e3;
+  --text-2: #b9b6b1;
+  --text-3: #8c8a87;
+  --text-4: #6b6a67;
+  --accent: #5aa2f0;
+  --holiday: var(--clock-second);
+  --today: var(--clock-second);
+  --chip-bg: #37373c;
+  --clock-face: var(--bg);
+  --clock-ink: #f2f0ed;
+  --clock-tick: #77767a;
+  --clock-second: #f59a3b;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  transition: background-color .2s, color .2s;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Layout ---------- */
+.icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+main {
+  padding: 0 56px 64px;
+  max-width: 1500px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1000px) minmax(280px, 360px);
+  column-gap: 56px;
+  align-content: start;
+}
+.hero { grid-column: 1 / -1; grid-row: 1; }
+.cal-block { grid-column: 1; grid-row: 2; padding-top: 40px; }
+
+/* ---------- Ricerca ---------- */
+.rail {
+  grid-column: 2; grid-row: 2;
+  padding-top: 40px;
+  display: flex; flex-direction: column; gap: 28px;
+}
+.searches { display: flex; flex-direction: column; gap: 12px; }
+.search-field {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 6px 0 14px;
+  background: var(--surface);
+  transition: border-color .15s, background .15s, box-shadow .15s;
+}
+.search-field:hover { border-color: var(--text-4); }
+.search-field:focus-within {
+  border-color: var(--selected-border);
+}
+.search-field .icon, .search-field .favicon { color: var(--text-3); flex: none; }
+.search-field input {
+  flex: 1; min-width: 0;
+  border: 0; outline: 0; background: transparent;
+  font: inherit; font-size: 15px; color: var(--text);
+  height: 44px;
+}
+.search-field input::placeholder { color: var(--text-4); }
+.search-field button {
+  flex: none;
+  border: 0; border-radius: 7px;
+  background: transparent;
+  color: var(--text-3);
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.search-field button:hover { background: var(--hover); color: var(--text); }
+
+/* ---------- Collegamenti ---------- */
+.links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: auto; /* spinge i pulsanti in fondo, a filo del bordo inferiore dei calendari */
+}
+.links a {
+  display: flex; align-items: center; gap: 10px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  text-decoration: none;
+  transition: border-color .15s, background .15s;
+}
+.links a:hover { background: var(--hover); border-color: var(--text-4); }
+.links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.links .icon, .links .favicon { color: var(--text-3); flex: none; }
+/* Favicon del sito resa monocromatica: la sagoma (calcolata in JS) fa da maschera
+   al colore del testo, così segue il tema come le icone disegnate */
+.favicon {
+  width: 16px; height: 16px; flex: none;
+  background: currentColor;
+  -webkit-mask: var(--fav) center / contain no-repeat;
+          mask: var(--fav) center / contain no-repeat;
+}
+
+/* ---------- Data ---------- */
+.hero {
+  padding: 86px 0 40px;
+  border-bottom: 1px solid var(--border);
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+.hero h1::first-letter { text-transform: uppercase; }
+
+/* ---------- Calendari ---------- */
+.calendars {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.cal {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 20px 16px;
+  background: var(--surface);
+  display: flex; flex-direction: column;
+}
+.cal.current .cal-head h2 { color: var(--holiday); }
+.cal-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cal-head h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: 22px;
+  margin: 0;
+}
+.cal-head h2::first-letter { text-transform: uppercase; }
+.cal-head .year { font-size: 12px; color: var(--text-3); }
+.grid {
+  display: grid;
+  grid-template-columns: 28px repeat(7, 1fr);
+  row-gap: 2px;
+  margin-bottom: 14px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.grid .dow {
+  font-size: 11px;
+  color: var(--text-3);
+  padding-bottom: 8px;
+  text-transform: lowercase;
+}
+.grid .wk {
+  font-size: 10px;
+  color: var(--text-4);
+  display: flex; align-items: center; justify-content: center;
+}
+.day {
+  height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: var(--text);
+  position: relative;
+}
+.day.weekend { color: var(--text-3); }
+.day.holiday { color: var(--holiday); }
+.day.past { color: var(--text-3); opacity: .55; }
+.day.out { color: var(--text-4); opacity: .6; }
+.day.today span {
+  position: relative;
+  isolation: isolate;
+  color: #fff;
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 600;
+}
+/* Il cerchio è disegnato a parte e spostato in verticale (--today-dy, calcolato in JS)
+   per centrarlo sul disegno delle cifre e non sul riquadro del testo */
+.day.today span::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: var(--today);
+  transform: translateY(var(--today-dy, 0px));
+  z-index: -1;
+}
+.day[title]:not(.out)::after {
+  content: "";
+  position: absolute; bottom: 2px;
+  width: 3px; height: 3px; border-radius: 50%;
+  background: var(--holiday);
+}
+.day.today::after { display: none; }
+
+.holidays {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.7;
+  min-height: 1.7em;
+}
+.chip {
+  display: inline-block;
+  background: var(--chip-bg);
+  color: var(--text-2);
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin: 2px 4px 2px 0;
+}
+
+/* ---------- Orologio analogico ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: subgrid; /* stesse colonne della pagina */
+  align-items: center;            /* orologio centrato rispetto ai testi */
+}
+.hero-text {
+  grid-column: 1;
+  display: flex; align-items: center; justify-content: space-between; gap: 40px;
+}
+
+/* ---------- Grafico del sole ---------- */
+.sun { width: 300px; height: 100px; flex: none; overflow: visible; }
+.sun .horizon { stroke: var(--text-4); stroke-width: 1; }
+.sun .path { fill: none; stroke: var(--text-3); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.sun .path.below { stroke: var(--text-4); stroke-dasharray: 1 3; }
+.sun .dot { fill: var(--clock-second); }
+.sun text { fill: var(--text-3); font-family: var(--sans); font-size: 10px; text-anchor: middle; }
+.analog {
+  grid-column: 2;
+  display: flex; justify-content: center;
+}
+.analog svg {
+  width: 132px; height: 132px;
+  border-radius: 23%;
+  display: block;
+}
+.analog .face { fill: var(--clock-face); }
+/* Doppio bordo: anello esterno più marcato, interno sottile */
+.analog .ring { fill: none; stroke: var(--clock-ink); }
+.analog .ring.outer { stroke-width: 2; stroke-opacity: .7; }
+.analog .ring.inner { stroke-width: 1; stroke-opacity: .3; }
+.analog .ticks line { stroke: var(--clock-tick); stroke-width: 1.4; stroke-linecap: round; }
+.analog .ticks line.h { stroke: var(--clock-ink); stroke-opacity: .55; stroke-width: 1.8; }
+.analog .num {
+  fill: var(--clock-ink);
+  font-family: var(--sans);
+  font-size: 25px; font-weight: 600;
+  text-anchor: middle; dominant-baseline: central;
+}
+.analog .ink { fill: var(--clock-ink); stroke: var(--clock-ink); }
+.analog .sec { stroke: var(--clock-second); fill: var(--clock-second); }
+
+/* ---------- Footer: avanzamento dell'anno ---------- */
+.yearbar {
+  grid-column: 1 / -1; grid-row: 3;
+  margin-top: 80px;
+}
+/* Anno come linea sottile continua, puntini sui confini tra i mesi
+   e pallino arancione su oggi */
+/* Linea, puntini dei mesi e pallino di oggi sono un unico disegno SVG:
+   così vengono arrotondati ai pixel allo stesso modo e restano allineati */
+.year-line { display: block; height: 9px; overflow: visible; }
+.year-line .track { stroke: var(--text-4); stroke-width: 1; }
+.year-line .mark { fill: var(--text-4); }  /* rombo a lati appena concavi a inizio mese */
+.year-line .dot { fill: var(--today); }
+/* Marcatori personali: bandierina sul giorno, tratto più spesso per i periodi */
+/* Colori dei marcatori: --mk è impostato per ogni marcatore (vedi MARKER_COLORS) */
+.year-line .marker { --mk: var(--text-2); }
+.year-line .flag { fill: var(--mk); }
+.year-line .flag-stem { stroke: var(--mk); stroke-width: 1; shape-rendering: crispEdges; }
+/* Periodi: parentesi graffa sotto la linea con la descrizione sotto */
+.year-line .span { stroke: var(--mk); stroke-width: 1; }
+.year-line .overlap line { stroke-width: 1; }  /* tratto della linea coperto dal periodo */
+.year-line .brace { fill: none; stroke: var(--mk); stroke-width: 1; stroke-linejoin: round; stroke-linecap: round; }
+.year-line .brace-label { fill: var(--mk); font-family: var(--sans); font-size: 11px; text-anchor: middle; }
+.year-line .marker { cursor: default; }
+.year-line .marker .hit { fill: transparent; }
+/* Numeri ai due capi della linea, sulla stessa riga */
+.year-row { display: flex; align-items: center; gap: 14px; }
+.year-row .year-line { flex: 1; }
+.year-row .brace {
+  font-family: var(--serif);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text-4);
+  margin: 0 -6px;                 /* più vicine alla linea che ai numeri */
+  transform: translateY(-1px);    /* centra il disegno della parentesi sulla linea */
+}
+.year-num {
+  flex: none;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Pulsante preferenze ---------- */
+.gear {
+  position: fixed; right: 20px; bottom: 20px;
+  width: 36px; height: 36px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: color .15s, transform .3s ease;
+}
+.gear:hover { color: var(--text); transform: rotate(45deg); }
+.gear:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gear .icon { width: 18px; height: 18px; }
+
+/* ---------- Preferenze ---------- */
+.prefs {
+  /* i limiti tengono conto dello zoom degli schermi grandi */
+  width: min(760px, calc(100vw / var(--page-zoom) - 32px));
+  max-height: calc(100vh / var(--page-zoom) - 64px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+}
+.prefs[open] { display: flex; flex-direction: column; }
+.prefs::backdrop { background: rgba(0,0,0,.28); }
+.prefs form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.prefs-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.prefs-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 26px; }
+.prefs-body { padding: 4px 24px 24px; overflow: auto; flex: 1; min-height: 0; } /* scorre se la lista è lunga */
+.prefs-section h3 {
+  margin: 24px 0 4px;
+  font-family: var(--serif); font-weight: 400; font-size: 19px;
+}
+.prefs-section .hint { margin: 0 0 12px; font-size: 12.5px; color: var(--text-3); line-height: 1.5; }
+.prefs-section .hint code { font-size: 12px; background: var(--chip-bg); padding: 1px 4px; border-radius: 4px; }
+.prefs input[type="text"], .prefs input[type="date"], .prefs select {
+  height: 36px; min-width: 0; width: 100%;
+  padding: 0 10px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--text);
+  font: inherit; font-size: 14px;
+}
+.prefs select.lang { width: auto; min-width: 220px; }
+.prefs input:focus, .prefs select:focus { outline: none; border-color: var(--selected-border); }
+.prefs input:disabled { background: var(--chip-bg); color: var(--text-3); }
+.prefs input.bad { border-color: var(--holiday); }
+.prefs .key { text-align: center; text-transform: lowercase; }
+.row { display: grid; gap: 8px; align-items: center; margin-bottom: 8px; }
+.row-head { font-size: 11.5px; color: var(--text-3); margin-bottom: 6px; }
+.search-row { grid-template-columns: 36px 170px minmax(0, 1fr) minmax(0, 1.6fr) 56px 32px; }
+.link-row { grid-template-columns: 36px minmax(0, 1fr) minmax(0, 2fr) 32px 32px 32px; }
+/* Scelta dell'icona di un collegamento: pulsante con l'icona attuale e pannello a griglia */
+.icon-pick {
+  width: 36px; height: 36px; padding: 0;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--text-2);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.icon-pick:hover { border-color: var(--text-4); }
+.icon-pick[aria-expanded="true"] { border-color: var(--selected-border); background: var(--selected-bg); }
+.icon-pick .icon, .icon-choice .icon { width: 18px; height: 18px; }
+.icon-panel {
+  margin: 0 0 10px; padding: 10px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--bg);
+}
+.icon-panel-head { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.prefs .icon-panel-head .icon-filter { flex: 1; width: auto; min-width: 140px; }
+.icon-panel-head .btn[aria-pressed="true"],
+.icon-choice[aria-pressed="true"] { background: var(--selected-bg); border-color: var(--selected-border); color: var(--text); }
+.icon-group { font-size: 11.5px; color: var(--text-3); margin: 8px 0 4px; }
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 2px; }
+.icon-scroll { max-height: 220px; overflow: auto; }
+.icon-choice {
+  height: 36px; padding: 0;
+  border: 1px solid transparent; border-radius: 7px;
+  background: transparent; color: var(--text-2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.icon-choice:hover { background: var(--hover); color: var(--text); }
+.icon-choice[hidden] { display: none; }
+.marker-row { grid-template-columns: 138px 138px minmax(0, 1fr) 118px 92px 32px; }
+.loc-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+.loc-row .find { white-space: nowrap; }
+.swatches { display: flex; gap: 4px; }
+.swatches label { position: relative; display: block; }
+.swatches input { position: absolute; opacity: 0; pointer-events: none; }
+.swatches span {
+  display: block; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--sw); cursor: pointer;
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 2px transparent;
+}
+.swatches input:checked + span { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--sw); }
+.swatches input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+.marker-row .yearly { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); white-space: nowrap; }
+.icon-btn {
+  width: 32px; height: 32px;
+  border: 0; border-radius: 7px;
+  background: transparent; color: var(--text-3);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.icon-btn:hover:not(:disabled) { background: var(--hover); color: var(--text); }
+.icon-btn:disabled { opacity: .35; cursor: default; }
+.add-btn {
+  margin-top: 2px;
+  border: 0; background: transparent; padding: 6px 0;
+  color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer;
+}
+.add-btn:hover { color: var(--text); text-decoration: underline; }
+.seg {
+  display: inline-flex; gap: 2px; padding: 3px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--bg);
+}
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span {
+  display: block; padding: 6px 16px; border-radius: 7px;
+  font-size: 13.5px; color: var(--text-2); cursor: pointer;
+}
+.seg input:checked + span { background: var(--hover); color: var(--text); }
+.seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+.prefs-error { min-height: 1em; margin: 0; font-size: 12.5px; color: var(--holiday); }
+.prefs-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+}
+.prefs-foot .right { display: flex; align-items: center; gap: 8px; }
+.btn {
+  height: 36px; padding: 0 16px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text);
+  font: inherit; font-size: 14px; cursor: pointer;
+}
+.btn:hover { border-color: var(--text-4); background: var(--hover); }
+.btn.primary { background: var(--text); border-color: var(--text); color: var(--bg); }
+.btn.primary:hover { opacity: .88; background: var(--text); }
+.btn.quiet { border-color: transparent; background: transparent; color: var(--text-3); padding: 0 4px; }
+.btn.quiet:hover { color: var(--text); background: transparent; text-decoration: underline; }
+@media (max-width: 700px) {
+  .search-row { grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1fr) 56px 32px; }
+  .search-row .tpl { grid-column: 1 / -1; grid-row: 2; }
+  .link-row { grid-template-columns: 36px minmax(0, 1fr) 32px 32px 32px; }
+  .link-row .url { grid-column: 1 / -1; grid-row: 2; }
+  .marker-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; }
+  .loc-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .loc-row .lname, .loc-row .find { grid-column: 1 / -1; }
+  .marker-row .mlabel { grid-column: 1 / 3; grid-row: 2; }
+  .marker-row .swatches { grid-column: 1 / 3; grid-row: 3; }
+  .marker-row .yearly { grid-column: 3 / -1; grid-row: 2; }
+  .row-head { display: none !important; }
+}
+
+/* ---------- Schermi grandi (es. 27" QHD, 2560 px) ----------
+   Ingrandisce tutta la pagina in proporzione, così occupa lo schermo
+   come su un monitor più piccolo invece di restare un riquadro al centro. */
+:root { --page-zoom: 1; }
+@media (min-width: 2000px) { :root { zoom: 1.15; --page-zoom: 1.15; } }
+@media (min-width: 2300px) { :root { zoom: 1.3;  --page-zoom: 1.3; } }
+@media (min-width: 3200px) { :root { zoom: 1.6;  --page-zoom: 1.6; } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1250px) {
+  .analog { display: none; }
+  .hero { display: block; }
+  main { grid-template-columns: minmax(0, 1fr); }
+  .rail { grid-column: 1; grid-row: 2; padding: 32px 0; border-bottom: 1px solid var(--border); }
+  .cal-block { grid-row: 3; }
+  .yearbar { grid-row: 4; }
+}
+@media (max-width: 900px) {
+  .sun { display: none; }
+  main { padding: 0 16px 40px; }
+  .calendars { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 34px; }
+}

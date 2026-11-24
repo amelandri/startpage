@@ -1,6 +1,6 @@
 # Startpage
 
-Pagina iniziale personale per il browser: un unico file [index.html](index.html) senza dipendenze, build o server. Basta aprirlo nel browser o impostarlo come pagina iniziale / nuova scheda.
+Pagina iniziale personale per il browser, senza dipendenze, build o server. Basta aprire [index.html](index.html) nel browser o impostarlo come pagina iniziale / nuova scheda; gli altri file ([style.css](style.css), [icons.js](icons.js), [app.js](app.js)) devono stare nella stessa cartella.
 
 L'interfaccia principale è disponibile in italiano, inglese, francese, tedesco e spagnolo; di default segue la lingua del browser. Le preferenze sono sempre in inglese.
 
@@ -43,7 +43,7 @@ Le preferenze sono salvate nel `localStorage` del browser con la chiave `startpa
 
 ## Personalizzazioni nel codice
 
-Alcune impostazioni non sono nelle preferenze e si cambiano direttamente in [index.html](index.html):
+Alcune impostazioni non sono nelle preferenze e si cambiano direttamente nel codice, in [app.js](app.js) (le icone in [icons.js](icons.js), i colori in [style.css](style.css)):
 
 - `I18N`: testi dell'interfaccia principale per ogni lingua; per aggiungerne una basta un nuovo blocco con le stesse chiavi.
 - `DEFAULTS`: ricerche, collegamenti, marcatori e posizione iniziali.

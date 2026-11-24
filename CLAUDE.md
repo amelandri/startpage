@@ -16,11 +16,12 @@ Interfaccia, testi e commenti nel codice sono in **italiano**: mantieni la stess
 4. `<script>` finale in un'unica IIFE, divisa in sezioni con commenti `// ---------- Nome ----------`:
    - Festività italiane (`easter`, `holidays` con cache per anno)
    - Utility (`isoWeek`, `dayOfYear`, `key`)
-   - Sole (`sunElevation`, `renderSunDay`, `renderSunDot`) con `LATITUDE`/`LONGITUDE` fissi
+   - Sole (`sunElevation`, `renderSunDay`, `renderSunDot`), con le coordinate prese da `settings.location`. `renderSunDay` campiona l'ora dell'orologio con `new Date(a, m, g, 0, minuti)` per gestire il cambio dell'ora legale
+   - Marcatori annuali: `markersSvg` considera anche l'occorrenza iniziata l'anno prima, per i periodi a cavallo di capodanno
    - Orologio analogico (`renderAnalog`, animato con `requestAnimationFrame`)
    - Calendari (`monthCalendar`, `renderCalendars`, `centerTodayCircle`)
    - Linea dell'anno (`renderYear`, `markersSvg`, `bracePath`, `MARKER_COLORS`), ridisegnata da un `ResizeObserver` perché le parentesi dei periodi sono in pixel
-   - Preferenze (`DEFAULTS`, `ENGINES`, `loadSettings`/`saveSettings`, `applySettings`, finestra con bozza `draft`, validazione in `submit`)
+   - Preferenze (`DEFAULTS`, `ENGINES`, `loadSettings`/`saveSettings`, `applySettings`, finestra con bozza `draft`, validazione in `submit`). La posizione (`location: { name, lat, lon }`) ha campi fissi nel form, identificati da `name` e non da `data-field`; `parseCoord` accetta virgola o punto; `findPlace` cerca le coordinate dal nome con l'API di geocodifica di Open-Meteo (cerca solo la parte prima della virgola e salva il nome come "Città, Regione"); `locNameEdited` la fa partire al salvataggio se il nome è cambiato senza aggiornare le coordinate
    - Favicon disegnata su canvas col giorno del mese
    - Loop: `tick()` ogni secondo ridisegna tutto solo al cambio di giorno; il pallino del sole ogni 30 s
    - Scorciatoie da tastiera per i campi di ricerca
@@ -30,7 +31,7 @@ Interfaccia, testi e commenti nel codice sono in **italiano**: mantieni la stess
 - Preferenze in `localStorage` con chiave `startpage-settings`. Se aggiungi un campo: mettilo in `DEFAULTS`, validalo in `loadSettings`, gestiscilo in `renderDraft`, nel listener `input` e nel `submit` del form.
 - Testo inserito dall'utente nell'SVG passa da `escapeXml`; nel DOM usa `textContent` o `.value`, non `innerHTML`.
 - Colori sempre tramite variabili CSS, così funzionano in entrambi i temi.
-- La pagina deve restare utilizzabile senza rete.
+- La pagina deve restare utilizzabile senza rete. L'unica chiamata esterna è la ricerca della località nelle preferenze, su richiesta; le coordinate si possono sempre inserire a mano.
 - Nessun riferimento personale o aziendale nei valori predefiniti (`DEFAULTS`): solo servizi generici. I collegamenti personali li inserisce l'utente dalle preferenze.
 
 ## Documentazione: tienila aggiornata

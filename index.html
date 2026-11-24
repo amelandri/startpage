@@ -433,7 +433,8 @@
   .search-row { grid-template-columns: 170px minmax(0, 1fr) minmax(0, 1.6fr) 56px 32px; }
   .link-row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 32px 32px 32px; }
   .marker-row { grid-template-columns: 138px 138px minmax(0, 1fr) 118px 92px 32px; }
-  .check-line { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 14px; color: var(--text); cursor: pointer; }
+  .loc-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+  .loc-row .find { white-space: nowrap; }
   .swatches { display: flex; gap: 4px; }
   .swatches label { position: relative; display: block; }
   .swatches input { position: absolute; opacity: 0; pointer-events: none; }
@@ -496,6 +497,8 @@
     .link-row { grid-template-columns: minmax(0, 1fr) 32px 32px 32px; }
     .link-row .url { grid-column: 1 / -1; grid-row: 2; }
     .marker-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; }
+    .loc-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .loc-row .lname, .loc-row .find { grid-column: 1 / -1; }
     .marker-row .mlabel { grid-column: 1 / 3; grid-row: 2; }
     .marker-row .swatches { grid-column: 1 / 3; grid-row: 3; }
     .marker-row .yearly { grid-column: 3 / -1; grid-row: 2; }
@@ -551,6 +554,7 @@
           <h1 id="date"></h1>
         </div>
         <svg class="sun" id="sun" viewBox="0 0 300 100" aria-hidden="true">
+          <title id="sun-title"></title>
           <defs>
             <clipPath id="sun-above"><rect x="-10" y="-10" width="320" height="70"/></clipPath>
             <clipPath id="sun-below"><rect x="-10" y="60" width="320" height="60"/></clipPath>
@@ -648,6 +652,18 @@
         </section>
 
         <section class="prefs-section">
+          <h3>Posizione</h3>
+          <p class="hint">Usata per calcolare alba, tramonto e percorso del sole. Scrivi il nome della località e premi "Cerca" (o Invio) per trovare le coordinate, oppure inseriscile a mano in gradi decimali.</p>
+          <div class="row loc-row row-head"><span>Nome</span><span>Latitudine</span><span>Longitudine</span><span></span></div>
+          <div class="row loc-row">
+            <input type="text" class="lname" name="locName" aria-label="Nome della località" placeholder="Città">
+            <input type="text" name="lat" aria-label="Latitudine" inputmode="decimal" placeholder="41,9028">
+            <input type="text" name="lon" aria-label="Longitudine" inputmode="decimal" placeholder="12,4964">
+            <button class="btn find" type="button" data-action="find-place">Cerca</button>
+          </div>
+        </section>
+
+        <section class="prefs-section">
           <h3>Ricerca</h3>
           <p class="hint">Scegli un motore predefinito, oppure "Personalizzato" e scrivi l'indirizzo di ricerca con <code>%s</code> al posto del testo cercato. Il tasto è la scorciatoia da tastiera per andare al campo.</p>
           <div class="row search-row row-head"><span>Motore</span><span>Etichetta</span><span>Indirizzo</span><span>Tasto</span><span></span></div>
@@ -665,9 +681,8 @@
 
         <section class="prefs-section">
           <h3>Marcatori</h3>
-          <p class="hint">Date da segnare con uno spillo sulla linea dell'anno. Indica anche la data di fine per un periodo, come le ferie. Con "Ogni anno" il marcatore si ripete sempre negli stessi giorni.</p>
+          <p class="hint">Date da segnare con uno spillo sulla linea dell'anno. Indica anche la data di fine per un periodo, come le ferie. Con "Ogni anno" il marcatore si ripete sempre negli stessi giorni, anche a cavallo di capodanno (es. dal 20 dicembre al 6 gennaio).</p>
           <div class="row marker-row row-head"><span>Dal</span><span>Al (facoltativo)</span><span>Nome</span><span>Colore</span><span></span><span></span></div>
-          <label class="check-line"><input type="checkbox" name="showHolidays"> Mostra le festività nazionali (giorni di chiusura di scuole e uffici)</label>
           <div id="pref-markers"></div>
           <button class="add-btn" type="button" data-action="add-marker">+ Aggiungi marcatore</button>
         </section>
@@ -686,9 +701,6 @@
 <script>
 (() => {
   const LOCALE = "it-IT";
-  // Posizione usata per alba, tramonto e percorso del sole (gradi decimali).
-  // Faenza (RA)
-  const LATITUDE = 44.2856, LONGITUDE = 11.8833;
   const DOW = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"];
 
   // ---------- Festività italiane ----------
@@ -766,13 +778,18 @@
   // Mappa: minuti del giorno → x (0–300), elevazione → y (orizzonte a 60)
   const sunX = m => m / 1440 * 300;
   const sunY = e => 60 - e * 0.75;
-  const hhmm = m => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(Math.floor(m % 60)).padStart(2, "0")}`;
+  const hhmm = m => {
+    m = Math.round(m) % 1440;  // arrotonda al minuto più vicino
+    return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+  };
 
   function renderSunDay(now) {
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     let d = "", prev = null, rise = null, set = null, yMin = Infinity, yMax = -Infinity;
     for (let m = 0; m <= 1440; m += 5) {
-      const e = sunElevation(new Date(start.getTime() + m * 60000), LATITUDE, LONGITUDE);
+      // m è l'ora sull'orologio (minuti dalla mezzanotte): con new Date(a, m, g, 0, m)
+      // il cambio dell'ora legale è gestito, e alba e tramonto restano nell'ora giusta
+      const at = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, m);
+      const e = sunElevation(at, settings.location.lat, settings.location.lon);
       const y = sunY(e);
       yMin = Math.min(yMin, y); yMax = Math.max(yMax, y);
       d += (m ? "L" : "M") + sunX(m).toFixed(1) + " " + y.toFixed(1);
@@ -794,24 +811,29 @@
     };
     label("sun-rise", rise);
     label("sun-set", set);
+    const place = settings.location.name;
+    document.getElementById("sun-title").textContent =
+      `Alba ${rise == null ? "—" : hhmm(rise)} · tramonto ${set == null ? "—" : hhmm(set)}` + (place ? ` · ${place}` : "");
   }
   function renderSunDot(now) {
     const m = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
-    const e = sunElevation(now, LATITUDE, LONGITUDE);
+    const e = sunElevation(now, settings.location.lat, settings.location.lon);
     const dot = document.getElementById("sun-dot");
     dot.setAttribute("cx", sunX(m).toFixed(1));
     dot.setAttribute("cy", sunY(e).toFixed(1));
   }
 
+  const analogBox = document.querySelector(".analog");
+  const [handH, handM, handS] = ["hand-h", "hand-m", "hand-s"].map(id => document.getElementById(id));
   function renderAnalog(now) {
+    if (analogBox.offsetParent === null) return;  // orologio nascosto (schermi stretti)
     const s = now.getSeconds() + now.getMilliseconds() / 1000,
           m = now.getMinutes() + s / 60,
           h = (now.getHours() % 12) + m / 60;
-    const set = (id, deg) => document.getElementById(id)
-      .setAttribute("transform", `translate(100 100) rotate(${deg})`);
-    set("hand-h", h * 30);
-    set("hand-m", m * 6);
-    set("hand-s", s * 6);
+    const set = (el, deg) => el.setAttribute("transform", `translate(100 100) rotate(${deg})`);
+    set(handH, h * 30);
+    set(handM, m * 6);
+    set(handS, s * 6);
   }
 
   // ---------- Calendari ----------
@@ -919,47 +941,31 @@
   }
 
   function markersSvg(y, total, width) {
-    const list = (typeof settings !== "undefined" && settings.markers) || [];
     const fmt = dt => dt.toLocaleDateString(LOCALE, { day: "numeric", month: "short" });
+    const y0 = new Date(y, 0, 1), y1 = new Date(y, 11, 31);
     // 1) calcola posizione e tipo di ogni marcatore che cade nell'anno y
     const items = [];
-    list.forEach(mk => {
+    settings.markers.forEach(mk => {
       const a = parseYMD(mk.from); if (!a) return;
       const b = parseYMD(mk.to);
-      const start = new Date(mk.yearly ? y : a.y, a.m, a.d);
-      const end = b ? new Date(mk.yearly ? y : b.y, b.m, b.d) : start;
-      if (end < start) return;
-      const y0 = new Date(y, 0, 1), y1 = new Date(y, 11, 31);
-      if (end < y0 || start > y1) return;                 // fuori dall'anno corrente
-      const vs = start < y0 ? y0 : start, ve = end > y1 ? y1 : end;
-      const x0 = (dayOfYear(vs) - 1) / total * 100;       // inizio del primo giorno
-      const x1 = dayOfYear(ve) / total * 100;             // fine dell'ultimo giorno
-      const range = !!b && +end !== +start;
-      items.push({ mk, x0, x1, range, lane: 0,
-                   when: range ? `${fmt(start)} – ${fmt(end)}` : fmt(start) });
+      // per i marcatori annuali conta anche l'occorrenza iniziata l'anno prima:
+      // un periodo a cavallo di capodanno (es. 20 dic – 6 gen) finisce nell'anno y
+      (mk.yearly ? [y - 1, y] : [a.y]).forEach(ys => {
+        const start = new Date(ys, a.m, a.d);
+        let end = start;
+        if (b) {
+          end = new Date(mk.yearly ? ys : b.y, b.m, b.d);
+          if (mk.yearly && end < start) end = new Date(ys + 1, b.m, b.d);
+        }
+        if (end < start || end < y0 || start > y1) return;  // non valido o fuori dall'anno
+        const vs = start < y0 ? y0 : start, ve = end > y1 ? y1 : end;
+        const x0 = (dayOfYear(vs) - 1) / total * 100;       // inizio del primo giorno
+        const x1 = dayOfYear(ve) / total * 100;             // fine dell'ultimo giorno
+        const range = +end !== +start;
+        items.push({ mk, x0, x1, range, lane: 0,
+                     when: range ? `${fmt(start)} – ${fmt(end)}` : fmt(start) });
+      });
     });
-    // festività nazionali (se attive): spilli nel colore d'accento;
-    // le festività in giorni consecutivi (es. Natale e Santo Stefano) diventano un solo spillo
-    if (typeof settings !== "undefined" && settings.showHolidays) {
-      const days = Object.entries(holidays(y))
-        .map(([k, name]) => { const [hy, hm, hd] = k.split("-").map(Number); return { dt: new Date(hy, hm, hd), name }; })
-        .filter(h => h.dt.getFullYear() === y)
-        .sort((a, b) => a.dt - b.dt);
-      const groups = [];
-      days.forEach(h => {
-        const g = groups[groups.length - 1];
-        if (g && dayOfYear(h.dt) - dayOfYear(g.last) === 1) { g.names.push(h.name); g.last = h.dt; }
-        else groups.push({ first: h.dt, last: h.dt, names: [h.name] });
-      });
-      groups.forEach(g => {
-        const when = g.first === g.last ? fmt(g.first)
-          : g.first.getMonth() === g.last.getMonth()
-            ? `${g.first.getDate()}–${fmt(g.last)}` : `${fmt(g.first)} – ${fmt(g.last)}`;
-        items.push({ mk: { label: g.names.join(" e ") }, css: "var(--today)", holiday: true,
-                     x0: (dayOfYear(g.first) - 1) / total * 100, x1: dayOfYear(g.last) / total * 100,
-                     range: false, lane: 0, when });
-      });
-    }
     // 2) periodi sovrapposti: quello che inizia dopo scende di una "corsia"
     //    (14 px: abbastanza perché anche le descrizioni non si accavallino)
     const LANE = 14, lanesEnd = [];
@@ -971,8 +977,8 @@
     });
     // 3) disegno
     let out = "";
-    items.forEach(({ mk, css, holiday, x0, x1, range, lane, when }) => {
-      out += `<g class="marker" style="--mk: ${css || markerColor(mk.color)}"><title>${escapeXml(mk.label)} · ${when}</title>`;
+    items.forEach(({ mk, x0, x1, range, lane, when }) => {
+      out += `<g class="marker" style="--mk: ${markerColor(mk.color)}"><title>${escapeXml(mk.label)} · ${when}</title>`;
       if (range) {
         // periodo: parentesi graffa sotto la linea e descrizione sotto la punta
         const xa = x0 / 100 * width, xb = x1 / 100 * width, off = lane * LANE;
@@ -981,9 +987,8 @@
                `<path class="brace" d="${bracePath(xa, xb, 12 + off, 5)}"/>` +
                `<text class="brace-label" x="${(xa + xb) / 2}" y="${36 + off}">${escapeXml(mk.label)}</text></g>`;
       } else {
-        // giorno singolo: spillo con un cerchio in cima; stelo di 11 px,
-        // più corto (6 px) per le festività nazionali così si distinguono dai marcatori personali
-        const stem = holiday ? 6 : 11;
+        // giorno singolo: spillo con un cerchio in cima, stelo di 11 px
+        const stem = 11;
         out += `<svg x="${x0}%" y="4.5" overflow="visible">` +
                `<rect class="hit" x="-5" y="${-stem - 7}" width="10" height="${stem + 9}"/>` +
                `<line class="flag-stem" x1="0" y1="0" x2="0" y2="${-stem}"/>` +
@@ -1011,7 +1016,7 @@
   let yearLineW = 0;
   new ResizeObserver(entries => {
     const w = Math.round(entries[0].contentRect.width);
-    if (w !== yearLineW) { yearLineW = w; if (typeof settings !== "undefined") renderYear(new Date()); }
+    if (w !== yearLineW) { yearLineW = w; renderYear(new Date()); }  // eseguito dopo lo script: settings c'è già
   }).observe(document.getElementById("year-line"));
 
   function renderYear(now) {
@@ -1075,7 +1080,12 @@
       { label: "Mastodon", url: "https://mastodon.social/" }
     ],
     markers: [],  // { from: "AAAA-MM-GG", to: "AAAA-MM-GG" | "", label, yearly, color }
-    showHolidays: false
+    location: { name: "Roma", lat: 41.9028, lon: 12.4964 }  // per alba, tramonto e sole
+  };
+  // coordinate scritte con la virgola o il punto; null se non valide
+  const parseCoord = (v, max) => {
+    const n = typeof v === "number" ? v : parseFloat(String(v || "").trim().replace(",", "."));
+    return Number.isFinite(n) && Math.abs(n) <= max ? n : null;
   };
   const clone = o => JSON.parse(JSON.stringify(o));
 
@@ -1085,10 +1095,15 @@
     const out = clone(DEFAULTS);
     if (s && typeof s === "object") {
       if (["system", "light", "dark"].includes(s.theme)) out.theme = s.theme;
-      if (Array.isArray(s.searches) && s.searches.length) out.searches = s.searches;
-      if (Array.isArray(s.links)) out.links = s.links;
-      if (Array.isArray(s.markers)) out.markers = s.markers;
-      if (typeof s.showHolidays === "boolean") out.showHolidays = s.showHolidays;
+      // scarta le voci malformate, che altrimenti bloccherebbero la pagina
+      const isStr = v => typeof v === "string";
+      const okItem = x => x && isStr(x.label) && isStr(x.url);
+      if (Array.isArray(s.searches) && s.searches.some(okItem)) out.searches = s.searches.filter(okItem);
+      if (Array.isArray(s.links)) out.links = s.links.filter(okItem);
+      if (Array.isArray(s.markers)) out.markers = s.markers.filter(x => x && isStr(x.from));
+      const loc = s.location;
+      if (loc && parseCoord(loc.lat, 90) !== null && parseCoord(loc.lon, 180) !== null)
+        out.location = { name: String(loc.name || ""), lat: +loc.lat, lon: +loc.lon };
     } else {
       // tema scelto con il vecchio interruttore
       try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") out.theme = t; } catch (e) {}
@@ -1187,6 +1202,8 @@
     renderSearches();
     renderLinks();
     renderYear(new Date());   // marcatori sulla linea dell'anno
+    renderSunDay(new Date()); // la posizione cambia alba, tramonto e percorso
+    renderSunDot(new Date());
   }
   applySettings();
 
@@ -1197,7 +1214,11 @@
   const prefLinks = document.getElementById("pref-links");
   const prefMarkers = document.getElementById("pref-markers");
   const prefsError = document.getElementById("prefs-error");
+  const findBtn = prefsForm.querySelector('[data-action="find-place"]');
   let draft = null;
+  // true se il nome della località è stato cambiato dopo l'ultima impostazione delle
+  // coordinate: al salvataggio la località viene cercata, così le coordinate corrispondono
+  let locNameEdited = false;
 
   const normUrl = u => {
     u = (u || "").trim();
@@ -1268,7 +1289,12 @@
       prefMarkers.appendChild(row);
     });
     prefsForm.querySelectorAll('input[name="theme"]').forEach(r => { r.checked = r.value === draft.theme; });
-    prefsForm.querySelector('input[name="showHolidays"]').checked = !!draft.showHolidays;
+    // posizione: numeri mostrati con la virgola, come si scrivono in italiano
+    const coord = v => typeof v === "number" ? String(v).replace(".", ",") : (v || "");
+    prefsForm.querySelectorAll(".loc-row input").forEach(i => i.classList.remove("bad"));
+    prefsForm.querySelector('input[name="locName"]').value = draft.location.name || "";
+    prefsForm.querySelector('input[name="lat"]').value = coord(draft.location.lat);
+    prefsForm.querySelector('input[name="lon"]').value = coord(draft.location.lon);
   }
 
   // aggiorna la bozza mentre si modifica
@@ -1276,7 +1302,8 @@
     const el = e.target;
     el.classList.remove("bad");
     if (el.name === "theme") { draft.theme = el.value; applyTheme(draft.theme); return; } // anteprima
-    if (el.name === "showHolidays") { draft.showHolidays = el.checked; return; }
+    if (el.name === "locName") { draft.location.name = el.value; locNameEdited = true; return; }
+    if (el.name === "lat" || el.name === "lon") { draft.location[el.name] = el.value; locNameEdited = false; return; }
     const row = el.closest(".row");
     if (!row || !el.dataset.field) return;
     const list = row.classList.contains("search-row") ? draft.searches
@@ -1293,8 +1320,9 @@
         if (!item.label || (prevEng && prevEng.label.startsWith(item.label))) item.label = eng.label;
         item.url = eng.url;
       }
-      renderDraft();
-      if (!eng) prefSearches.children[+row.dataset.index].querySelector('[data-field="url"]').focus();
+      renderDraft();  // ricrea le righe: rimetti il focus dove serve
+      prefSearches.children[+row.dataset.index]
+        .querySelector(eng ? '[data-field="engine"]' : '[data-field="url"]').focus();
       return;
     }
     item[el.dataset.field] = el.dataset.field === "key" ? el.value.toLowerCase() : el.value;
@@ -1319,8 +1347,9 @@
       case "del-link": draft.links.splice(i, 1); break;
       case "up-link": [draft.links[i - 1], draft.links[i]] = [draft.links[i], draft.links[i - 1]]; break;
       case "down-link": [draft.links[i + 1], draft.links[i]] = [draft.links[i], draft.links[i + 1]]; break;
-      case "reset": draft = clone(DEFAULTS); applyTheme(draft.theme); break;
+      case "reset": draft = clone(DEFAULTS); locNameEdited = false; applyTheme(draft.theme); break;
       case "cancel": closePrefs(false); return;
+      case "find-place": findPlace(); return;
       default: return;
     }
     renderDraft();
@@ -1331,9 +1360,53 @@
     }
   });
 
+  // cerca le coordinate della località scritta nel nome (geocodifica di Open-Meteo,
+  // gratuita e senza chiave). Si cerca solo la parte prima della virgola: il risultato
+  // viene salvato come "Città, Regione" e così si può cercare di nuovo.
+  // Coordinate arrotondate a 4 decimali (circa 10 m). Restituisce true se ha trovato la località.
+  async function findPlace() {
+    if (findBtn.disabled) return false;  // ricerca già in corso
+    const nameInput = prefsForm.querySelector('input[name="locName"]');
+    const fail = msg => { prefsError.textContent = msg; nameInput.classList.add("bad"); nameInput.focus(); return false; };
+    const q = (draft.location.name || "").split(",")[0].trim();
+    if (!q) return fail("Scrivi il nome della località da cercare.");
+    const text = findBtn.textContent;
+    findBtn.disabled = true;
+    findBtn.textContent = "Ricerca…";
+    prefsError.textContent = "";
+    try {
+      const res = await fetch("https://geocoding-api.open-meteo.com/v1/search?count=1&format=json&language=it&name="
+                              + encodeURIComponent(q));
+      if (!res.ok) throw new Error(res.status);
+      const r = ((await res.json()).results || [])[0];
+      if (!dlg.open) return false;  // finestra chiusa nel frattempo
+      if (!r) return fail(`Nessuna località trovata per "${q}".`);
+      const round = n => Math.round(n * 1e4) / 1e4;
+      draft.location = {
+        name: [r.name, r.admin1 && r.admin1 !== r.name ? r.admin1 : r.country].filter(Boolean).join(", "),
+        lat: round(r.latitude), lon: round(r.longitude)
+      };
+      locNameEdited = false;
+      renderDraft();
+      return true;
+    } catch (e) {
+      return fail("Ricerca non riuscita (sei connesso?): inserisci le coordinate a mano.");
+    } finally {
+      findBtn.disabled = false;
+      findBtn.textContent = text;
+    }
+  }
+  // Invio nel campo del nome avvia la ricerca invece di salvare
+  prefsForm.querySelector('input[name="locName"]').addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); findPlace(); }
+  });
+
   // validazione e salvataggio
-  prefsForm.addEventListener("submit", e => {
+  prefsForm.addEventListener("submit", async e => {
     e.preventDefault();
+    // nome della località cambiato senza cercarlo: cerca ora, altrimenti le
+    // coordinate resterebbero quelle della località precedente
+    if (locNameEdited && (draft.location.name || "").trim() && !(await findPlace())) return;
     // le righe dei collegamenti lasciate vuote vengono scartate
     draft.links = draft.links.filter(l => (l.label || "").trim() || (l.url || "").trim());
     draft.markers = draft.markers.filter(m => (m.label || "").trim() || m.from || m.to);
@@ -1373,13 +1446,19 @@
       mk.yearly = !!mk.yearly;
       if (!parseYMD(mk.from)) bad(row, "from", "Manca la data di un marcatore.");
       if (!mk.label) bad(row, "label", "Manca il nome di un marcatore.");
-      if (mk.to && parseYMD(mk.from)) {
-        const a = parseYMD(mk.from), b = parseYMD(mk.to);
-        const sa = mk.yearly ? a.m * 100 + a.d : a.y * 10000 + a.m * 100 + a.d;
-        const sb = mk.yearly ? b.m * 100 + b.d : b.y * 10000 + b.m * 100 + b.d;
-        if (sb < sa) bad(row, "to", "La data di fine di un marcatore è prima di quella di inizio.");
-      }
+      // date ISO: il confronto tra stringhe segue l'ordine cronologico.
+      // Per i marcatori annuali una fine "prima" dell'inizio è un periodo a cavallo di capodanno.
+      if (!mk.yearly && mk.to && parseYMD(mk.from) && mk.to < mk.from)
+        bad(row, "to", "La data di fine di un marcatore è prima di quella di inizio.");
     });
+    const loc = draft.location;
+    loc.name = (loc.name || "").trim();
+    const lat = parseCoord(loc.lat, 90), lon = parseCoord(loc.lon, 180);
+    const locBad = name => { prefsForm.querySelector(`input[name="${name}"]`).classList.add("bad"); };
+    if (lat === null) { locBad("lat"); errors.push("La latitudine deve essere un numero tra -90 e 90."); }
+    else loc.lat = lat;
+    if (lon === null) { locBad("lon"); errors.push("La longitudine deve essere un numero tra -180 e 180."); }
+    else loc.lon = lon;
     if (errors.length) {
       prefsError.textContent = errors[0];
       const first = prefsForm.querySelector(".bad");
@@ -1387,13 +1466,18 @@
       return;
     }
     settings = clone(draft);
-    if (!saveSettings(settings)) prefsError.textContent = "Impossibile salvare nel browser.";
     applySettings();
+    if (!saveSettings(settings)) {
+      // finestra lasciata aperta, altrimenti il messaggio non si vedrebbe
+      prefsError.textContent = "Impossibile salvare nel browser: le modifiche valgono solo finché la pagina resta aperta.";
+      return;
+    }
     closePrefs(true);
   });
 
   function openPrefs() {
     draft = clone(settings);
+    locNameEdited = false;
     renderDraft();
     dlg.showModal();
   }
@@ -1402,7 +1486,11 @@
     dlg.close();
   }
   dlg.addEventListener("cancel", e => { e.preventDefault(); closePrefs(false); }); // tasto Esc
-  dlg.addEventListener("click", e => { if (e.target === dlg) closePrefs(false); }); // clic sullo sfondo
+  // clic sullo sfondo: chiude solo se anche la pressione è iniziata sullo sfondo, così
+  // selezionare il testo di un campo trascinando fuori dalla finestra non perde le modifiche
+  let pressedOnBackdrop = false;
+  dlg.addEventListener("pointerdown", e => { pressedOnBackdrop = e.target === dlg; });
+  dlg.addEventListener("click", e => { if (e.target === dlg && pressedOnBackdrop) closePrefs(false); });
   document.getElementById("open-prefs").addEventListener("click", openPrefs);
 
   // ---------- Favicon: il giorno del mese ----------

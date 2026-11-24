@@ -1,0 +1,1486 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home</title>
+<link rel="icon" id="favicon" href="data:,">
+<style>
+  /* ---------- Palette & tipografia (stile Instapaper) ---------- */
+  :root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --hover: #efefef;
+    --selected-bg: #eff6fd;
+    --selected-border: #cfe2f6;
+    --border: #e8e8e8;
+    --text: #1a1a1a;
+    --text-2: #555555;
+    --text-3: #8a8a8a;
+    --text-4: #b4b4b4;
+    --accent: #1f6fd1;
+    --holiday: #b45309;          /* accento per i testi: arancione scuro, leggibile sul bianco */
+    --today: var(--clock-second);
+    --chip-bg: #f0f0f0;
+    --clock-face: var(--bg);
+    --clock-ink: #111111;
+    --clock-tick: #9a9a9a;
+    --clock-second: #f0912f;
+    color-scheme: light;
+
+    --serif: "Iowan Old Style", "Charter", "Lyon Text", "Tiempos Text", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", Inter, Arial, sans-serif;
+  }
+  /* Tema scuro: segue il sistema, salvo scelta manuale con l'interruttore */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #242427;
+      --surface: #2c2c30;
+      --hover: #38383d;
+      --selected-bg: #283447;
+      --selected-border: #3a5372;
+      --border: #3b3b40;
+      --text: #e8e6e3;
+      --text-2: #b9b6b1;
+      --text-3: #8c8a87;
+      --text-4: #6b6a67;
+      --accent: #5aa2f0;
+      --holiday: var(--clock-second);
+      --today: var(--clock-second);
+      --chip-bg: #37373c;
+      --clock-face: var(--bg);
+      --clock-ink: #f2f0ed;
+      --clock-tick: #77767a;
+      --clock-second: #f59a3b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #242427;
+    --surface: #2c2c30;
+    --hover: #38383d;
+    --selected-bg: #283447;
+    --selected-border: #3a5372;
+    --border: #3b3b40;
+    --text: #e8e6e3;
+    --text-2: #b9b6b1;
+    --text-3: #8c8a87;
+    --text-4: #6b6a67;
+    --accent: #5aa2f0;
+    --holiday: var(--clock-second);
+    --today: var(--clock-second);
+    --chip-bg: #37373c;
+    --clock-face: var(--bg);
+    --clock-ink: #f2f0ed;
+    --clock-tick: #77767a;
+    --clock-second: #f59a3b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    transition: background-color .2s, color .2s;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Layout ---------- */
+  .icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+  main {
+    padding: 0 56px 64px;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1000px) minmax(280px, 360px);
+    column-gap: 56px;
+    align-content: start;
+  }
+  .hero { grid-column: 1 / -1; grid-row: 1; }
+  .cal-block { grid-column: 1; grid-row: 2; padding-top: 40px; }
+
+  /* ---------- Ricerca ---------- */
+  .rail {
+    grid-column: 2; grid-row: 2;
+    padding-top: 40px;
+    display: flex; flex-direction: column; gap: 28px;
+  }
+  .searches { display: flex; flex-direction: column; gap: 28px; }
+  .search label {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--serif);
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .search-field {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0 6px 0 14px;
+    background: var(--surface);
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  .search-field:hover { border-color: var(--text-4); }
+  .search-field:focus-within {
+    border-color: var(--selected-border);
+  }
+  .search-field .icon { color: var(--text-3); flex: none; }
+  .search-field input {
+    flex: 1; min-width: 0;
+    border: 0; outline: 0; background: transparent;
+    font: inherit; font-size: 15px; color: var(--text);
+    height: 44px;
+  }
+  .search-field input::placeholder { color: var(--text-4); }
+  .search-field button {
+    flex: none;
+    border: 0; border-radius: 7px;
+    background: transparent;
+    color: var(--text-3);
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .search-field button:hover { background: var(--hover); color: var(--text); }
+
+  /* ---------- Collegamenti ---------- */
+  .links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: auto; /* spinge i pulsanti in fondo, a filo del bordo inferiore dei calendari */
+  }
+  .links a {
+    display: flex; align-items: center; gap: 10px;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+    text-decoration: none;
+    transition: border-color .15s, background .15s;
+  }
+  .links a:hover { background: var(--hover); border-color: var(--text-4); }
+  .links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .links .icon { color: var(--text-3); flex: none; }
+
+  /* ---------- Data ---------- */
+  .hero {
+    padding: 86px 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44px;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+    margin: 0;
+  }
+  .hero h1::first-letter { text-transform: uppercase; }
+
+  /* ---------- Calendari ---------- */
+  .calendars {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+  .cal {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 20px 16px;
+    background: var(--surface);
+    display: flex; flex-direction: column;
+  }
+  .cal.current .cal-head h2 { color: var(--holiday); }
+  .cal-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .cal-head h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22px;
+    margin: 0;
+  }
+  .cal-head h2::first-letter { text-transform: uppercase; }
+  .cal-head .year { font-size: 12px; color: var(--text-3); }
+  .grid {
+    display: grid;
+    grid-template-columns: 28px repeat(7, 1fr);
+    row-gap: 2px;
+    margin-bottom: 14px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .grid .dow {
+    font-size: 11px;
+    color: var(--text-3);
+    padding-bottom: 8px;
+    text-transform: lowercase;
+  }
+  .grid .wk {
+    font-size: 10px;
+    color: var(--text-4);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .day {
+    height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: var(--text);
+    position: relative;
+  }
+  .day.weekend { color: var(--text-3); }
+  .day.holiday { color: var(--holiday); }
+  .day.past { color: var(--text-3); opacity: .55; }
+  .day.out { color: var(--text-4); opacity: .6; }
+  .day.today span {
+    position: relative;
+    isolation: isolate;
+    color: #fff;
+    width: 30px; height: 30px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 600;
+  }
+  /* Il cerchio è disegnato a parte e spostato in verticale (--today-dy, calcolato in JS)
+     per centrarlo sul disegno delle cifre e non sul riquadro del testo */
+  .day.today span::before {
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: var(--today);
+    transform: translateY(var(--today-dy, 0px));
+    z-index: -1;
+  }
+  .day[title]:not(.out)::after {
+    content: "";
+    position: absolute; bottom: 2px;
+    width: 3px; height: 3px; border-radius: 50%;
+    background: var(--holiday);
+  }
+  .day.today::after { display: none; }
+
+  .holidays {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-3);
+    line-height: 1.7;
+    min-height: 1.7em;
+  }
+  .chip {
+    display: inline-block;
+    background: var(--chip-bg);
+    color: var(--text-2);
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin: 2px 4px 2px 0;
+  }
+
+  /* ---------- Orologio analogico ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: subgrid; /* stesse colonne della pagina */
+    align-items: center;            /* orologio centrato rispetto ai testi */
+  }
+  .hero-text {
+    grid-column: 1;
+    display: flex; align-items: center; justify-content: space-between; gap: 40px;
+  }
+
+  /* ---------- Grafico del sole ---------- */
+  .sun { width: 300px; height: 100px; flex: none; overflow: visible; }
+  .sun .horizon { stroke: var(--text-4); stroke-width: 1; }
+  .sun .path { fill: none; stroke: var(--text-3); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  .sun .path.below { stroke: var(--text-4); stroke-dasharray: 1 3; }
+  .sun .dot { fill: var(--clock-second); }
+  .sun text { fill: var(--text-3); font-family: var(--sans); font-size: 10px; text-anchor: middle; }
+  .analog {
+    grid-column: 2;
+    display: flex; justify-content: center;
+  }
+  .analog svg {
+    width: 132px; height: 132px;
+    border-radius: 23%;
+    display: block;
+  }
+  .analog .face { fill: var(--clock-face); }
+  /* Doppio bordo: anello esterno più marcato, interno sottile */
+  .analog .ring { fill: none; stroke: var(--clock-ink); }
+  .analog .ring.outer { stroke-width: 2; stroke-opacity: .7; }
+  .analog .ring.inner { stroke-width: 1; stroke-opacity: .3; }
+  .analog .ticks line { stroke: var(--clock-tick); stroke-width: 1.4; stroke-linecap: round; }
+  .analog .ticks line.h { stroke: var(--clock-ink); stroke-opacity: .55; stroke-width: 1.8; }
+  .analog .num {
+    fill: var(--clock-ink);
+    font-family: var(--sans);
+    font-size: 25px; font-weight: 600;
+    text-anchor: middle; dominant-baseline: central;
+  }
+  .analog .ink { fill: var(--clock-ink); stroke: var(--clock-ink); }
+  .analog .sec { stroke: var(--clock-second); fill: var(--clock-second); }
+
+  /* ---------- Footer: avanzamento dell'anno ---------- */
+  .yearbar {
+    grid-column: 1 / -1; grid-row: 3;
+    margin-top: 80px;
+  }
+  /* Anno come linea sottile continua, puntini sui confini tra i mesi
+     e pallino arancione su oggi */
+  /* Linea, puntini dei mesi e pallino di oggi sono un unico disegno SVG:
+     così vengono arrotondati ai pixel allo stesso modo e restano allineati */
+  .year-line { display: block; height: 9px; overflow: visible; }
+  .year-line .track { stroke: var(--text-4); stroke-width: 1; }
+  .year-line .mark { fill: var(--text-4); }  /* rombo a lati appena concavi a inizio mese */
+  .year-line .dot { fill: var(--today); }
+  /* Marcatori personali: bandierina sul giorno, tratto più spesso per i periodi */
+  /* Colori dei marcatori: --mk è impostato per ogni marcatore (vedi MARKER_COLORS) */
+  .year-line .marker { --mk: var(--text-2); }
+  .year-line .flag { fill: var(--mk); }
+  .year-line .flag-stem { stroke: var(--mk); stroke-width: 1; shape-rendering: crispEdges; }
+  /* Periodi: parentesi graffa sotto la linea con la descrizione sotto */
+  .year-line .span { stroke: var(--mk); stroke-width: 1; }
+  .year-line .overlap line { stroke-width: 1; }  /* tratto della linea coperto dal periodo */
+  .year-line .brace { fill: none; stroke: var(--mk); stroke-width: 1; stroke-linejoin: round; stroke-linecap: round; }
+  .year-line .brace-label { fill: var(--mk); font-family: var(--sans); font-size: 11px; text-anchor: middle; }
+  .year-line .marker { cursor: default; }
+  .year-line .marker .hit { fill: transparent; }
+  /* Numeri ai due capi della linea, sulla stessa riga */
+  .year-row { display: flex; align-items: center; gap: 14px; }
+  .year-row .year-line { flex: 1; }
+  .year-row .brace {
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1;
+    color: var(--text-4);
+    margin: 0 -6px;                 /* più vicine alla linea che ai numeri */
+    transform: translateY(-1px);    /* centra il disegno della parentesi sulla linea */
+  }
+  .year-num {
+    flex: none;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Pulsante preferenze ---------- */
+  .gear {
+    position: fixed; right: 20px; bottom: 20px;
+    width: 36px; height: 36px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--text-3);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: color .15s, transform .3s ease;
+  }
+  .gear:hover { color: var(--text); transform: rotate(45deg); }
+  .gear:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .gear .icon { width: 18px; height: 18px; }
+
+  /* ---------- Preferenze ---------- */
+  .prefs {
+    /* i limiti tengono conto dello zoom degli schermi grandi */
+    width: min(760px, calc(100vw / var(--page-zoom) - 32px));
+    max-height: calc(100vh / var(--page-zoom) - 64px);
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  }
+  .prefs[open] { display: flex; flex-direction: column; }
+  .prefs::backdrop { background: rgba(0,0,0,.28); }
+  .prefs form { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+  .prefs-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .prefs-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 26px; }
+  .prefs-body { padding: 4px 24px 24px; overflow: auto; flex: 1; min-height: 0; } /* scorre se la lista è lunga */
+  .prefs-section h3 {
+    margin: 24px 0 4px;
+    font-family: var(--serif); font-weight: 400; font-size: 19px;
+  }
+  .prefs-section .hint { margin: 0 0 12px; font-size: 12.5px; color: var(--text-3); line-height: 1.5; }
+  .prefs-section .hint code { font-size: 12px; background: var(--chip-bg); padding: 1px 4px; border-radius: 4px; }
+  .prefs input[type="text"], .prefs input[type="date"], .prefs select {
+    height: 36px; min-width: 0; width: 100%;
+    padding: 0 10px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text);
+    font: inherit; font-size: 14px;
+  }
+  .prefs input:focus, .prefs select:focus { outline: none; border-color: var(--selected-border); }
+  .prefs input:disabled { background: var(--chip-bg); color: var(--text-3); }
+  .prefs input.bad { border-color: var(--holiday); }
+  .prefs .key { text-align: center; text-transform: lowercase; }
+  .row { display: grid; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .row-head { font-size: 11.5px; color: var(--text-3); margin-bottom: 6px; }
+  .search-row { grid-template-columns: 170px minmax(0, 1fr) minmax(0, 1.6fr) 56px 32px; }
+  .link-row { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 32px 32px 32px; }
+  .marker-row { grid-template-columns: 138px 138px minmax(0, 1fr) 118px 92px 32px; }
+  .check-line { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 14px; color: var(--text); cursor: pointer; }
+  .swatches { display: flex; gap: 4px; }
+  .swatches label { position: relative; display: block; }
+  .swatches input { position: absolute; opacity: 0; pointer-events: none; }
+  .swatches span {
+    display: block; width: 15px; height: 15px; border-radius: 50%;
+    background: var(--sw); cursor: pointer;
+    box-shadow: 0 0 0 2px var(--surface), 0 0 0 2px transparent;
+  }
+  .swatches input:checked + span { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--sw); }
+  .swatches input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .marker-row .yearly { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-2); white-space: nowrap; }
+  .icon-btn {
+    width: 32px; height: 32px;
+    border: 0; border-radius: 7px;
+    background: transparent; color: var(--text-3);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .icon-btn:hover:not(:disabled) { background: var(--hover); color: var(--text); }
+  .icon-btn:disabled { opacity: .35; cursor: default; }
+  .add-btn {
+    margin-top: 2px;
+    border: 0; background: transparent; padding: 6px 0;
+    color: var(--text-2); font: inherit; font-size: 13px; cursor: pointer;
+  }
+  .add-btn:hover { color: var(--text); text-decoration: underline; }
+  .seg {
+    display: inline-flex; gap: 2px; padding: 3px;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--bg);
+  }
+  .seg label { position: relative; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span {
+    display: block; padding: 6px 16px; border-radius: 7px;
+    font-size: 13.5px; color: var(--text-2); cursor: pointer;
+  }
+  .seg input:checked + span { background: var(--hover); color: var(--text); }
+  .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .prefs-error { min-height: 1em; margin: 0; font-size: 12.5px; color: var(--holiday); }
+  .prefs-foot {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+  }
+  .prefs-foot .right { display: flex; align-items: center; gap: 8px; }
+  .btn {
+    height: 36px; padding: 0 16px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface); color: var(--text);
+    font: inherit; font-size: 14px; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--text-4); background: var(--hover); }
+  .btn.primary { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .btn.primary:hover { opacity: .88; background: var(--text); }
+  .btn.quiet { border-color: transparent; background: transparent; color: var(--text-3); padding: 0 4px; }
+  .btn.quiet:hover { color: var(--text); background: transparent; text-decoration: underline; }
+  @media (max-width: 700px) {
+    .search-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 56px 32px; }
+    .search-row .tpl { grid-column: 1 / -1; grid-row: 2; }
+    .link-row { grid-template-columns: minmax(0, 1fr) 32px 32px 32px; }
+    .link-row .url { grid-column: 1 / -1; grid-row: 2; }
+    .marker-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; }
+    .marker-row .mlabel { grid-column: 1 / 3; grid-row: 2; }
+    .marker-row .swatches { grid-column: 1 / 3; grid-row: 3; }
+    .marker-row .yearly { grid-column: 3 / -1; grid-row: 2; }
+    .row-head { display: none !important; }
+  }
+
+  /* ---------- Schermi grandi (es. 27" QHD, 2560 px) ----------
+     Ingrandisce tutta la pagina in proporzione, così occupa lo schermo
+     come su un monitor più piccolo invece di restare un riquadro al centro. */
+  :root { --page-zoom: 1; }
+  @media (min-width: 2000px) { :root { zoom: 1.15; --page-zoom: 1.15; } }
+  @media (min-width: 2300px) { :root { zoom: 1.3;  --page-zoom: 1.3; } }
+  @media (min-width: 3200px) { :root { zoom: 1.6;  --page-zoom: 1.6; } }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1250px) {
+    .analog { display: none; }
+    .hero { display: block; }
+    main { grid-template-columns: minmax(0, 1fr); }
+    .rail { grid-column: 1; grid-row: 2; padding: 32px 0; border-bottom: 1px solid var(--border); }
+    .cal-block { grid-row: 3; }
+    .yearbar { grid-row: 4; }
+  }
+  @media (max-width: 900px) {
+    .sun { display: none; }
+    main { padding: 0 16px 40px; }
+    .calendars { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 34px; }
+  }
+</style>
+<script>
+  // Applica il tema (dalle preferenze) prima del rendering, per evitare lampi
+  (function () {
+    var t = "system";
+    try {
+      var s = JSON.parse(localStorage.getItem("startpage-settings") || "null");
+      if (s && s.theme) t = s.theme;
+      else if (localStorage.getItem("theme")) t = localStorage.getItem("theme"); // vecchia preferenza
+    } catch (e) {}
+    if (t !== "light" && t !== "dark") {
+      t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+  })();
+</script>
+</head>
+<body>
+
+  <main>
+    <section class="hero">
+      <div class="hero-text">
+        <div>
+          <h1 id="date"></h1>
+        </div>
+        <svg class="sun" id="sun" viewBox="0 0 300 100" aria-hidden="true">
+          <defs>
+            <clipPath id="sun-above"><rect x="-10" y="-10" width="320" height="70"/></clipPath>
+            <clipPath id="sun-below"><rect x="-10" y="60" width="320" height="60"/></clipPath>
+            <!-- sfumatura alle estremità per orizzonte e curva del sole:
+                 maschera orizzontale, piena al centro e trasparente ai bordi -->
+            <linearGradient id="sun-fade-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0">
+              <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+              <stop offset=".12" stop-color="#fff" stop-opacity="1"/>
+              <stop offset=".88" stop-color="#fff" stop-opacity="1"/>
+              <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+            </linearGradient>
+            <mask id="sun-fade" maskUnits="userSpaceOnUse" x="-10" y="-200" width="320" height="400">
+              <rect x="-10" y="-200" width="320" height="400" fill="url(#sun-fade-grad)"/>
+            </mask>
+          </defs>
+          <g id="sun-g">
+          <g mask="url(#sun-fade)">
+            <path class="path below" id="sun-path-below" clip-path="url(#sun-below)"/>
+            <line class="horizon" x1="0" y1="60" x2="300" y2="60"/>
+            <path class="path" id="sun-path" clip-path="url(#sun-above)"/>
+          </g>
+          <text id="sun-rise" y="76"></text>
+          <text id="sun-set" y="76"></text>
+          <circle class="dot" id="sun-dot" r="4.5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="analog" aria-hidden="true">
+        <svg viewBox="0 0 200 200">
+          <rect class="face" width="200" height="200"/>
+          <circle class="ring outer" cx="100" cy="100" r="98"/>
+          <circle class="ring inner" cx="100" cy="100" r="94"/>
+          <g class="ticks"><line class="h" x1="100.00" y1="12.00" x2="100.00" y2="21.00"/><line x1="109.20" y1="12.48" x2="108.57" y2="18.45"/><line x1="118.30" y1="13.92" x2="117.05" y2="19.79"/><line x1="127.19" y1="16.31" x2="125.34" y2="22.01"/><line x1="135.79" y1="19.61" x2="133.35" y2="25.09"/><line class="h" x1="144.00" y1="23.79" x2="139.50" y2="31.58"/><line x1="151.73" y1="28.81" x2="148.20" y2="33.66"/><line x1="158.88" y1="34.60" x2="154.87" y2="39.06"/><line x1="165.40" y1="41.12" x2="160.94" y2="45.13"/><line x1="171.19" y1="48.27" x2="166.34" y2="51.80"/><line class="h" x1="176.21" y1="56.00" x2="168.42" y2="60.50"/><line x1="180.39" y1="64.21" x2="174.91" y2="66.65"/><line x1="183.69" y1="72.81" x2="177.99" y2="74.66"/><line x1="186.08" y1="81.70" x2="180.21" y2="82.95"/><line x1="187.52" y1="90.80" x2="181.55" y2="91.43"/><line class="h" x1="188.00" y1="100.00" x2="179.00" y2="100.00"/><line x1="187.52" y1="109.20" x2="181.55" y2="108.57"/><line x1="186.08" y1="118.30" x2="180.21" y2="117.05"/><line x1="183.69" y1="127.19" x2="177.99" y2="125.34"/><line x1="180.39" y1="135.79" x2="174.91" y2="133.35"/><line class="h" x1="176.21" y1="144.00" x2="168.42" y2="139.50"/><line x1="171.19" y1="151.73" x2="166.34" y2="148.20"/><line x1="165.40" y1="158.88" x2="160.94" y2="154.87"/><line x1="158.88" y1="165.40" x2="154.87" y2="160.94"/><line x1="151.73" y1="171.19" x2="148.20" y2="166.34"/><line class="h" x1="144.00" y1="176.21" x2="139.50" y2="168.42"/><line x1="135.79" y1="180.39" x2="133.35" y2="174.91"/><line x1="127.19" y1="183.69" x2="125.34" y2="177.99"/><line x1="118.30" y1="186.08" x2="117.05" y2="180.21"/><line x1="109.20" y1="187.52" x2="108.57" y2="181.55"/><line class="h" x1="100.00" y1="188.00" x2="100.00" y2="179.00"/><line x1="90.80" y1="187.52" x2="91.43" y2="181.55"/><line x1="81.70" y1="186.08" x2="82.95" y2="180.21"/><line x1="72.81" y1="183.69" x2="74.66" y2="177.99"/><line x1="64.21" y1="180.39" x2="66.65" y2="174.91"/><line class="h" x1="56.00" y1="176.21" x2="60.50" y2="168.42"/><line x1="48.27" y1="171.19" x2="51.80" y2="166.34"/><line x1="41.12" y1="165.40" x2="45.13" y2="160.94"/><line x1="34.60" y1="158.88" x2="39.06" y2="154.87"/><line x1="28.81" y1="151.73" x2="33.66" y2="148.20"/><line class="h" x1="23.79" y1="144.00" x2="31.58" y2="139.50"/><line x1="19.61" y1="135.79" x2="25.09" y2="133.35"/><line x1="16.31" y1="127.19" x2="22.01" y2="125.34"/><line x1="13.92" y1="118.30" x2="19.79" y2="117.05"/><line x1="12.48" y1="109.20" x2="18.45" y2="108.57"/><line class="h" x1="12.00" y1="100.00" x2="21.00" y2="100.00"/><line x1="12.48" y1="90.80" x2="18.45" y2="91.43"/><line x1="13.92" y1="81.70" x2="19.79" y2="82.95"/><line x1="16.31" y1="72.81" x2="22.01" y2="74.66"/><line x1="19.61" y1="64.21" x2="25.09" y2="66.65"/><line class="h" x1="23.79" y1="56.00" x2="31.58" y2="60.50"/><line x1="28.81" y1="48.27" x2="33.66" y2="51.80"/><line x1="34.60" y1="41.12" x2="39.06" y2="45.13"/><line x1="41.12" y1="34.60" x2="45.13" y2="39.06"/><line x1="48.27" y1="28.81" x2="51.80" y2="33.66"/><line class="h" x1="56.00" y1="23.79" x2="60.50" y2="31.58"/><line x1="64.21" y1="19.61" x2="66.65" y2="25.09"/><line x1="72.81" y1="16.31" x2="74.66" y2="22.01"/><line x1="81.70" y1="13.92" x2="82.95" y2="19.79"/><line x1="90.80" y1="12.48" x2="91.43" y2="18.45"/></g>
+          <text class="num" x="100" y="31">12</text>
+          <text class="num" x="169" y="100">3</text>
+          <text class="num" x="100" y="169">6</text>
+          <text class="num" x="31" y="100">9</text>
+          <g id="hand-h" class="ink">
+            <rect x="-1" y="-14" width="2" height="14" stroke="none"/>
+            <rect x="-2.6" y="-50" width="5.2" height="40" rx="2.6" stroke="none"/>
+          </g>
+          <g id="hand-m" class="ink">
+            <rect x="-1" y="-14" width="2" height="14" stroke="none"/>
+            <rect x="-2.6" y="-80" width="5.2" height="70" rx="2.6" stroke="none"/>
+          </g>
+          <circle cx="100" cy="100" r="4.5" class="ink" stroke="none"/>
+          <g id="hand-s" class="sec">
+            <line x1="0" y1="18" x2="0" y2="-86" stroke-width="1.6" stroke-linecap="round"/>
+          </g>
+          <circle cx="100" cy="100" r="3" class="sec" stroke="none"/>
+          <circle cx="100" cy="100" r="1.2" fill="var(--clock-face)"/>
+        </svg>
+      </div>
+    </section>
+
+    <div class="cal-block">
+      <section class="calendars" id="calendars"></section>
+    </div>
+
+    <aside class="rail">
+      <div id="searches" class="searches"></div>
+      <nav class="links" id="links" aria-label="Collegamenti"></nav>
+    </aside>
+    <footer class="yearbar">
+      <div class="year-row">
+        <span class="year-num" id="year-past"></span>
+        <span class="brace" aria-hidden="true">}</span>
+        <svg class="year-line" id="year-line" width="100%" height="9" role="progressbar" aria-label="Avanzamento dell'anno" aria-valuemin="0" aria-valuemax="100"></svg>
+        <span class="brace" aria-hidden="true">{</span>
+        <span class="year-num" id="year-left"></span>
+      </div>
+    </footer>
+  </main>
+
+  <button class="gear" id="open-prefs" type="button" aria-label="Preferenze" title="Preferenze">
+    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
+
+  <dialog class="prefs" id="prefs" aria-labelledby="prefs-title">
+    <form id="prefs-form" novalidate>
+      <div class="prefs-head">
+        <h2 id="prefs-title">Preferenze</h2>
+        <button class="icon-btn" type="button" data-action="cancel" aria-label="Chiudi">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="prefs-body">
+        <section class="prefs-section">
+          <h3>Tema</h3>
+          <div class="seg" role="radiogroup" aria-label="Tema">
+            <label><input type="radio" name="theme" value="system"><span>Sistema</span></label>
+            <label><input type="radio" name="theme" value="light"><span>Chiaro</span></label>
+            <label><input type="radio" name="theme" value="dark"><span>Scuro</span></label>
+          </div>
+        </section>
+
+        <section class="prefs-section">
+          <h3>Ricerca</h3>
+          <p class="hint">Scegli un motore predefinito, oppure "Personalizzato" e scrivi l'indirizzo di ricerca con <code>%s</code> al posto del testo cercato. Il tasto è la scorciatoia da tastiera per andare al campo.</p>
+          <div class="row search-row row-head"><span>Motore</span><span>Etichetta</span><span>Indirizzo</span><span>Tasto</span><span></span></div>
+          <div id="pref-searches"></div>
+          <button class="add-btn" type="button" data-action="add-search">+ Aggiungi motore di ricerca</button>
+        </section>
+
+        <section class="prefs-section">
+          <h3>Collegamenti</h3>
+          <p class="hint">I pulsanti sotto le ricerche. L'icona viene scelta in automatico in base al nome o all'indirizzo.</p>
+          <div class="row link-row row-head"><span>Etichetta</span><span>Indirizzo</span><span></span><span></span><span></span></div>
+          <div id="pref-links"></div>
+          <button class="add-btn" type="button" data-action="add-link">+ Aggiungi collegamento</button>
+        </section>
+
+        <section class="prefs-section">
+          <h3>Marcatori</h3>
+          <p class="hint">Date da segnare con uno spillo sulla linea dell'anno. Indica anche la data di fine per un periodo, come le ferie. Con "Ogni anno" il marcatore si ripete sempre negli stessi giorni.</p>
+          <div class="row marker-row row-head"><span>Dal</span><span>Al (facoltativo)</span><span>Nome</span><span>Colore</span><span></span><span></span></div>
+          <label class="check-line"><input type="checkbox" name="showHolidays"> Mostra le festività nazionali (giorni di chiusura di scuole e uffici)</label>
+          <div id="pref-markers"></div>
+          <button class="add-btn" type="button" data-action="add-marker">+ Aggiungi marcatore</button>
+        </section>
+      </div>
+      <div class="prefs-foot">
+        <button class="btn quiet" type="button" data-action="reset">Ripristina predefiniti</button>
+        <div class="right">
+          <p class="prefs-error" id="prefs-error" role="alert"></p>
+          <button class="btn" type="button" data-action="cancel">Annulla</button>
+          <button class="btn primary" type="submit">Salva</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+<script>
+(() => {
+  const LOCALE = "it-IT";
+  // Posizione usata per alba, tramonto e percorso del sole (gradi decimali).
+  // Faenza (RA)
+  const LATITUDE = 44.2856, LONGITUDE = 11.8833;
+  const DOW = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"];
+
+  // ---------- Festività italiane ----------
+  function easter(y) {
+    const a = y % 19, b = Math.floor(y / 100), c = y % 100,
+          d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+          g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+          i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7,
+          m = Math.floor((a + 11 * h + 22 * l) / 451),
+          month = Math.floor((h + l - 7 * m + 114) / 31),
+          day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(y, month - 1, day);
+  }
+  const key = d => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const holidayCache = {};
+  function holidays(y) {
+    if (holidayCache[y]) return holidayCache[y];
+    const map = {};
+    const add = (m, d, name) => { map[key(new Date(y, m, d))] = name; };
+    add(0, 1, "Capodanno");
+    add(0, 6, "Epifania");
+    add(3, 25, "Festa della Liberazione");
+    add(4, 1, "Festa dei Lavoratori");
+    add(5, 2, "Festa della Repubblica");
+    add(7, 15, "Ferragosto");
+    add(9, 4, "San Francesco d'Assisi");
+    add(10, 1, "Ognissanti");
+    add(11, 8, "Immacolata Concezione");
+    add(11, 25, "Natale");
+    add(11, 26, "Santo Stefano");
+    const e = easter(y);
+    map[key(e)] = "Pasqua";
+    const em = new Date(e); em.setDate(e.getDate() + 1);
+    map[key(em)] = "Lunedì dell'Angelo";
+    return (holidayCache[y] = map);
+  }
+  const holidayName = d => holidays(d.getFullYear())[key(d)];
+
+  // ---------- Utility ----------
+  function isoWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  }
+  function dayOfYear(date) {
+    const start = new Date(date.getFullYear(), 0, 1);
+    return Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - start) / 86400000) + 1;
+  }
+  const sameDay = (a, b) => key(a) === key(b);
+
+  // ---------- Data e ora ----------
+  function renderDate(now) {
+    document.getElementById("date").textContent =
+      now.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+
+  // ---------- Sole ----------
+  const RAD = Math.PI / 180;
+  // Elevazione del sole in gradi (algoritmo semplificato, precisione ~1 minuto)
+  function sunElevation(date, lat, lon) {
+    const n = date.getTime() / 86400000 + 2440587.5 - 2451545.0;
+    const L = (280.460 + 0.9856474 * n) % 360;
+    const g = (357.528 + 0.9856003 * n) * RAD;
+    const lambda = (L + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * RAD;
+    const eps = (23.439 - 0.0000004 * n) * RAD;
+    const ra = Math.atan2(Math.cos(eps) * Math.sin(lambda), Math.cos(lambda)) / RAD;
+    const dec = Math.asin(Math.sin(eps) * Math.sin(lambda));
+    const gmst = ((18.697374558 + 24.06570982441908 * n) % 24) * 15;
+    const ha = (gmst + lon - ra) * RAD;
+    return Math.asin(Math.sin(lat * RAD) * Math.sin(dec) +
+                     Math.cos(lat * RAD) * Math.cos(dec) * Math.cos(ha)) / RAD;
+  }
+  // Mappa: minuti del giorno → x (0–300), elevazione → y (orizzonte a 60)
+  const sunX = m => m / 1440 * 300;
+  const sunY = e => 60 - e * 0.75;
+  const hhmm = m => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(Math.floor(m % 60)).padStart(2, "0")}`;
+
+  function renderSunDay(now) {
+    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let d = "", prev = null, rise = null, set = null, yMin = Infinity, yMax = -Infinity;
+    for (let m = 0; m <= 1440; m += 5) {
+      const e = sunElevation(new Date(start.getTime() + m * 60000), LATITUDE, LONGITUDE);
+      const y = sunY(e);
+      yMin = Math.min(yMin, y); yMax = Math.max(yMax, y);
+      d += (m ? "L" : "M") + sunX(m).toFixed(1) + " " + y.toFixed(1);
+      if (prev) {  // alba/tramonto: centro del disco a -0,833° (rifrazione)
+        const a = prev[1] + 0.833, b = e + 0.833;
+        if (a < 0 && b >= 0) rise = prev[0] + 5 * (-a) / (b - a);
+        if (a >= 0 && b < 0) set = prev[0] + 5 * a / (a - b);
+      }
+      prev = [m, e];
+    }
+    document.getElementById("sun-path").setAttribute("d", d);
+    document.getElementById("sun-path-below").setAttribute("d", d);
+    // Centra verticalmente la curva del giorno nel riquadro (d'inverno pesa in basso, d'estate in alto)
+    document.getElementById("sun-g").setAttribute("transform", `translate(0 ${(50 - (yMin + yMax) / 2).toFixed(1)})`);
+    const label = (id, m) => {
+      const t = document.getElementById(id);
+      t.textContent = m == null ? "" : hhmm(m);
+      if (m != null) t.setAttribute("x", sunX(m).toFixed(1));
+    };
+    label("sun-rise", rise);
+    label("sun-set", set);
+  }
+  function renderSunDot(now) {
+    const m = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+    const e = sunElevation(now, LATITUDE, LONGITUDE);
+    const dot = document.getElementById("sun-dot");
+    dot.setAttribute("cx", sunX(m).toFixed(1));
+    dot.setAttribute("cy", sunY(e).toFixed(1));
+  }
+
+  function renderAnalog(now) {
+    const s = now.getSeconds() + now.getMilliseconds() / 1000,
+          m = now.getMinutes() + s / 60,
+          h = (now.getHours() % 12) + m / 60;
+    const set = (id, deg) => document.getElementById(id)
+      .setAttribute("transform", `translate(100 100) rotate(${deg})`);
+    set("hand-h", h * 30);
+    set("hand-m", m * 6);
+    set("hand-s", s * 6);
+  }
+
+  // ---------- Calendari ----------
+  function monthCalendar(year, month, today, isCurrent) {
+    const first = new Date(year, month, 1);
+    const offset = (first.getDay() + 6) % 7; // lunedì = 0
+    const start = new Date(year, month, 1 - offset);
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const weeks = Math.ceil((offset + lastDay) / 7);
+
+    const el = document.createElement("div");
+    el.className = "cal" + (isCurrent ? " current" : "");
+    const monthName = first.toLocaleDateString(LOCALE, { month: "long" });
+
+    let html = `<div class="cal-head"><h2>${monthName}</h2><span class="year">${year}</span></div>`;
+    html += `<div class="grid"><div class="dow"></div>` + DOW.map(d => `<div class="dow">${d}</div>`).join("");
+
+    const monthHolidays = [];
+    const cursor = new Date(start);
+    for (let w = 0; w < weeks; w++) {
+      html += `<div class="wk">${isoWeek(cursor)}</div>`;
+      for (let i = 0; i < 7; i++) {
+        const classes = ["day"];
+        const out = cursor.getMonth() !== month;
+        if (out) classes.push("out");
+        if (i >= 5) classes.push("weekend");
+        const h = holidayName(cursor);
+        if (h && !out) { classes.push("holiday"); monthHolidays.push([cursor.getDate(), h]); }
+        if (sameDay(cursor, today)) classes.push("today");
+        else if (cursor < today && !out) classes.push("past");
+        const title = h ? ` title="${h}"` : "";
+        html += `<div class="${classes.join(" ")}"${title}><span>${cursor.getDate()}</span></div>`;
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    }
+    html += `</div>`;
+    html += `<div class="holidays">` + (monthHolidays.length
+      ? monthHolidays.map(([d, n]) => `<span class="chip">${d} · ${n}</span>`).join("")
+      : `Nessuna festività`) + `</div>`;
+    el.innerHTML = html;
+    return el;
+  }
+  // Calcola di quanto spostare il cerchio di oggi perché sia centrato sulle cifre:
+  // le cifre non hanno discendenti, quindi il loro centro visivo non coincide con
+  // il centro del riquadro del testo. La misura usa il font effettivo del sistema.
+  function centerTodayCircle() {
+    const span = document.querySelector(".day.today span");
+    if (!span) return;
+    const cs = getComputedStyle(span);
+    const ctx = document.createElement("canvas").getContext("2d");
+    ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const m = ctx.measureText(span.textContent);
+    if (!m.fontBoundingBoxAscent) return;              // browser senza queste metriche
+    // con lo zoom delle pagine grandi le misure a schermo sono ingrandite:
+    // le riporto in px CSS, le stesse unità delle metriche del font
+    const z = span.currentCSSZoom || 1;
+    const range = document.createRange();
+    range.selectNodeContents(span);
+    const r = range.getBoundingClientRect();
+    const lineTop = r.top / z, lineH = r.height / z;
+    const fa = m.fontBoundingBoxAscent, fd = m.fontBoundingBoxDescent;
+    const baseline = lineTop + (lineH - (fa + fd)) / 2 + fa;
+    const glyphCenter = baseline + (m.actualBoundingBoxDescent - m.actualBoundingBoxAscent) / 2;
+    const b = span.getBoundingClientRect();
+    const dy = Math.round((glyphCenter - (b.top + b.height / 2) / z) * 4) / 4;
+    span.style.setProperty("--today-dy", dy + "px");
+  }
+
+  function renderCalendars(now) {
+    const box = document.getElementById("calendars");
+    box.innerHTML = "";
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    box.appendChild(monthCalendar(now.getFullYear(), now.getMonth(), today, true));
+    const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    box.appendChild(monthCalendar(next.getFullYear(), next.getMonth(), today, false));
+    centerTodayCircle();
+  }
+
+  // ---------- Avanzamento dell'anno ----------
+  // Tavolozza dei marcatori: colori medi, leggibili sia sul tema chiaro sia sullo scuro
+  const MARKER_COLORS = [
+    { id: "grey",   label: "Grigio",    css: "var(--text-2)" },
+    { id: "orange", label: "Arancione", css: "var(--clock-second)" },
+    { id: "red",    label: "Rosso",     css: "#d9534a" },
+    { id: "green",  label: "Verde",     css: "#2f9e6a" },
+    { id: "blue",   label: "Blu",       css: "#3b82d6" },
+    { id: "violet", label: "Viola",     css: "#8062d6" }
+  ];
+  const markerColor = id => (MARKER_COLORS.find(c => c.id === id) || MARKER_COLORS[0]).css;
+
+  // Marcatori personali dell'anno y: bandierina all'inizio, tratto spesso per i periodi.
+  // Le date sono "AAAA-MM-GG"; con yearly si usano solo mese e giorno.
+  const parseYMD = v => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || "");
+    return m ? { y: +m[1], m: +m[2] - 1, d: +m[3] } : null;
+  };
+  const escapeXml = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // Parentesi graffa orizzontale da xa a xb (px), con la punta verso il basso.
+  // top = y del lato piatto, h = metà profondità, r = raggio delle curve.
+  function bracePath(xa, xb, top, h) {
+    const w = xb - xa, m = (xa + xb) / 2, r = Math.min(5, w / 4);
+    return `M${xa} ${top} Q${xa} ${top + h} ${xa + r} ${top + h} L${m - r} ${top + h} ` +
+           `Q${m} ${top + h} ${m} ${top + 2 * h} Q${m} ${top + h} ${m + r} ${top + h} ` +
+           `L${xb - r} ${top + h} Q${xb} ${top + h} ${xb} ${top}`;
+  }
+
+  function markersSvg(y, total, width) {
+    const list = (typeof settings !== "undefined" && settings.markers) || [];
+    const fmt = dt => dt.toLocaleDateString(LOCALE, { day: "numeric", month: "short" });
+    // 1) calcola posizione e tipo di ogni marcatore che cade nell'anno y
+    const items = [];
+    list.forEach(mk => {
+      const a = parseYMD(mk.from); if (!a) return;
+      const b = parseYMD(mk.to);
+      const start = new Date(mk.yearly ? y : a.y, a.m, a.d);
+      const end = b ? new Date(mk.yearly ? y : b.y, b.m, b.d) : start;
+      if (end < start) return;
+      const y0 = new Date(y, 0, 1), y1 = new Date(y, 11, 31);
+      if (end < y0 || start > y1) return;                 // fuori dall'anno corrente
+      const vs = start < y0 ? y0 : start, ve = end > y1 ? y1 : end;
+      const x0 = (dayOfYear(vs) - 1) / total * 100;       // inizio del primo giorno
+      const x1 = dayOfYear(ve) / total * 100;             // fine dell'ultimo giorno
+      const range = !!b && +end !== +start;
+      items.push({ mk, x0, x1, range, lane: 0,
+                   when: range ? `${fmt(start)} – ${fmt(end)}` : fmt(start) });
+    });
+    // festività nazionali (se attive): spilli nel colore d'accento;
+    // le festività in giorni consecutivi (es. Natale e Santo Stefano) diventano un solo spillo
+    if (typeof settings !== "undefined" && settings.showHolidays) {
+      const days = Object.entries(holidays(y))
+        .map(([k, name]) => { const [hy, hm, hd] = k.split("-").map(Number); return { dt: new Date(hy, hm, hd), name }; })
+        .filter(h => h.dt.getFullYear() === y)
+        .sort((a, b) => a.dt - b.dt);
+      const groups = [];
+      days.forEach(h => {
+        const g = groups[groups.length - 1];
+        if (g && dayOfYear(h.dt) - dayOfYear(g.last) === 1) { g.names.push(h.name); g.last = h.dt; }
+        else groups.push({ first: h.dt, last: h.dt, names: [h.name] });
+      });
+      groups.forEach(g => {
+        const when = g.first === g.last ? fmt(g.first)
+          : g.first.getMonth() === g.last.getMonth()
+            ? `${g.first.getDate()}–${fmt(g.last)}` : `${fmt(g.first)} – ${fmt(g.last)}`;
+        items.push({ mk: { label: g.names.join(" e ") }, css: "var(--today)", holiday: true,
+                     x0: (dayOfYear(g.first) - 1) / total * 100, x1: dayOfYear(g.last) / total * 100,
+                     range: false, lane: 0, when });
+      });
+    }
+    // 2) periodi sovrapposti: quello che inizia dopo scende di una "corsia"
+    //    (14 px: abbastanza perché anche le descrizioni non si accavallino)
+    const LANE = 14, lanesEnd = [];
+    items.filter(it => it.range).sort((p, q) => p.x0 - q.x0 || p.x1 - q.x1).forEach(it => {
+      let lane = lanesEnd.findIndex(endX => endX < it.x0);
+      if (lane < 0) { lane = lanesEnd.length; lanesEnd.push(0); }
+      lanesEnd[lane] = it.x1;
+      it.lane = lane;
+    });
+    // 3) disegno
+    let out = "";
+    items.forEach(({ mk, css, holiday, x0, x1, range, lane, when }) => {
+      out += `<g class="marker" style="--mk: ${css || markerColor(mk.color)}"><title>${escapeXml(mk.label)} · ${when}</title>`;
+      if (range) {
+        // periodo: parentesi graffa sotto la linea e descrizione sotto la punta
+        const xa = x0 / 100 * width, xb = x1 / 100 * width, off = lane * LANE;
+        out += `<rect class="hit" x="${xa}" y="2" width="${xb - xa}" height="${38 + off}"/>` +
+               `<line class="span" x1="${xa}" y1="4.5" x2="${xb}" y2="4.5"/>` +
+               `<path class="brace" d="${bracePath(xa, xb, 12 + off, 5)}"/>` +
+               `<text class="brace-label" x="${(xa + xb) / 2}" y="${36 + off}">${escapeXml(mk.label)}</text></g>`;
+      } else {
+        // giorno singolo: spillo con un cerchio in cima; stelo di 11 px,
+        // più corto (6 px) per le festività nazionali così si distinguono dai marcatori personali
+        const stem = holiday ? 6 : 11;
+        out += `<svg x="${x0}%" y="4.5" overflow="visible">` +
+               `<rect class="hit" x="-5" y="${-stem - 7}" width="10" height="${stem + 9}"/>` +
+               `<line class="flag-stem" x1="0" y1="0" x2="0" y2="${-stem}"/>` +
+               `<circle class="flag" cx="0" cy="${-stem - 2.5}" r="3"/></svg></g>`;
+      }
+    });
+    // 4) dove due periodi si sovrappongono la linea diventa tratteggiata,
+    //    alternando i colori dei due periodi (3 px ciascuno)
+    const ranges = items.filter(it => it.range);
+    for (let i = 0; i < ranges.length; i++)
+      for (let j = i + 1; j < ranges.length; j++) {
+        const a = ranges[i], b = ranges[j];
+        const s0 = Math.max(a.x0, b.x0) / 100 * width, s1 = Math.min(a.x1, b.x1) / 100 * width;
+        if (s1 <= s0) continue;
+        out += `<g class="overlap">` +
+               `<line x1="${s0}" y1="4.5" x2="${s1}" y2="4.5" style="stroke: var(--bg)"/>` +
+               `<line x1="${s0}" y1="4.5" x2="${s1}" y2="4.5" style="stroke: ${markerColor(a.mk.color)}" stroke-dasharray="3 3"/>` +
+               `<line x1="${s0}" y1="4.5" x2="${s1}" y2="4.5" style="stroke: ${markerColor(b.mk.color)}" stroke-dasharray="3 3" stroke-dashoffset="3"/>` +
+               `</g>`;
+      }
+    return out;
+  }
+
+  // le parentesi dei periodi sono in pixel: ridisegna quando la linea cambia larghezza
+  let yearLineW = 0;
+  new ResizeObserver(entries => {
+    const w = Math.round(entries[0].contentRect.width);
+    if (w !== yearLineW) { yearLineW = w; if (typeof settings !== "undefined") renderYear(new Date()); }
+  }).observe(document.getElementById("year-line"));
+
+  function renderYear(now) {
+    const y = now.getFullYear();
+    const total = new Date(y, 1, 29).getMonth() === 1 ? 366 : 365;
+    const done = dayOfYear(now) - 1;           // giorni interamente trascorsi
+    const pct = done / total * 100;
+    const line = document.getElementById("year-line");
+    // rombo 7×7 px con i lati leggermente incurvati verso il centro
+    const DIAMOND = "M0 -3.5 Q1.25 -1.25 3.5 0 Q1.25 1.25 0 3.5 Q-1.25 1.25 -3.5 0 Q-1.25 -1.25 0 -3.5Z";
+    let svg = '<line class="track" x1="0" y1="4.5" x2="100%" y2="4.5"/>';
+    for (let m = 1; m < 12; m++) {  // un puntino all'inizio di ogni mese da febbraio
+      const at = (dayOfYear(new Date(y, m, 1)) - 1) / total * 100;
+      // SVG annidato per posizionare in percentuale una forma disegnata attorno all'origine
+      svg += `<svg x="${at}%" y="4.5" overflow="visible"><path class="mark" d="${DIAMOND}"/></svg>`;
+    }
+    svg += markersSvg(y, total, line.clientWidth);
+    svg += `<circle class="dot" cx="${pct}%" cy="4.5" r="4.5"/>`;  // come il pallino del sole
+    line.innerHTML = svg;
+    line.title = `${done} giorni trascorsi · ${total - done} rimanenti`;
+    document.getElementById("year-past").textContent = done;
+    document.getElementById("year-left").textContent = total - done;
+    line.setAttribute("aria-valuenow", Math.floor(pct));
+  }
+
+  // ---------- Preferenze ----------
+  const STORAGE_KEY = "startpage-settings";
+
+  // Motori di ricerca predefiniti: %s viene sostituito dal testo cercato
+  const ENGINES = [
+    { id: "duckduckgo",   label: "DuckDuckGo",        url: "https://duckduckgo.com/?q=%s" },
+    { id: "google",       label: "Google",            url: "https://www.google.com/search?q=%s" },
+    { id: "bing",         label: "Bing",              url: "https://www.bing.com/search?q=%s" },
+    { id: "startpage",    label: "Startpage",         url: "https://www.startpage.com/do/search?query=%s" },
+    { id: "ecosia",       label: "Ecosia",            url: "https://www.ecosia.org/search?q=%s" },
+    { id: "brave",        label: "Brave Search",      url: "https://search.brave.com/search?q=%s" },
+    { id: "qwant",        label: "Qwant",             url: "https://www.qwant.com/?q=%s" },
+    { id: "kagi",         label: "Kagi",              url: "https://kagi.com/search?q=%s" },
+    { id: "wikipedia-it", label: "Wikipedia (it)",    url: "https://it.wikipedia.org/w/index.php?search=%s" },
+    { id: "wikipedia-en", label: "Wikipedia (en)",    url: "https://en.wikipedia.org/w/index.php?search=%s" },
+    { id: "youtube",      label: "YouTube",           url: "https://www.youtube.com/results?search_query=%s" },
+    { id: "maps",         label: "Google Maps",       url: "https://www.google.com/maps/search/%s" },
+    { id: "osm",          label: "OpenStreetMap",     url: "https://www.openstreetmap.org/search?query=%s" },
+    { id: "translate",    label: "Google Traduttore", url: "https://translate.google.com/?sl=auto&tl=it&text=%s" },
+    { id: "deepl",        label: "DeepL",             url: "https://www.deepl.com/translator#auto/it/%s" },
+    { id: "github",       label: "GitHub",            url: "https://github.com/search?q=%s" },
+    { id: "amazon-it",    label: "Amazon.it",         url: "https://www.amazon.it/s?k=%s" }
+  ];
+  const engineById = id => ENGINES.find(e => e.id === id);
+
+  const DEFAULTS = {
+    theme: "system",
+    searches: [
+      { engine: "duckduckgo",   label: "DuckDuckGo", url: engineById("duckduckgo").url,   key: "d" },
+      { engine: "wikipedia-en", label: "Wikipedia",  url: engineById("wikipedia-en").url, key: "w" }
+    ],
+    links: [
+      { label: "Gmail",    url: "https://mail.google.com/" },
+      { label: "Outlook",  url: "https://outlook.live.com/mail/" },
+      { label: "Drive",    url: "https://drive.google.com/" },
+      { label: "Mastodon", url: "https://mastodon.social/" }
+    ],
+    markers: [],  // { from: "AAAA-MM-GG", to: "AAAA-MM-GG" | "", label, yearly, color }
+    showHolidays: false
+  };
+  const clone = o => JSON.parse(JSON.stringify(o));
+
+  function loadSettings() {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); } catch (e) {}
+    const out = clone(DEFAULTS);
+    if (s && typeof s === "object") {
+      if (["system", "light", "dark"].includes(s.theme)) out.theme = s.theme;
+      if (Array.isArray(s.searches) && s.searches.length) out.searches = s.searches;
+      if (Array.isArray(s.links)) out.links = s.links;
+      if (Array.isArray(s.markers)) out.markers = s.markers;
+      if (typeof s.showHolidays === "boolean") out.showHolidays = s.showHolidays;
+    } else {
+      // tema scelto con il vecchio interruttore
+      try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") out.theme = t; } catch (e) {}
+    }
+    return out;
+  }
+  function saveSettings(s) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); return true; } catch (e) { return false; }
+  }
+
+  let settings = loadSettings();
+
+  // ----- Tema -----
+  const darkQuery = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+  function applyTheme(pref) {
+    const t = pref === "system" ? (darkQuery && darkQuery.matches ? "dark" : "light") : pref;
+    document.documentElement.setAttribute("data-theme", t);
+  }
+  if (darkQuery) darkQuery.addEventListener("change", () => { if (settings.theme === "system") applyTheme("system"); });
+
+  // ----- Icone -----
+  const svgIcon = d => `<svg class="icon" viewBox="0 0 24 24">${d}</svg>`;
+  const ICONS = {
+    search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+    arrow: '<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    cloud: '<path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 10a4 4 0 0 1-1 7.9H7z"/>',
+    diagram: '<rect x="3" y="3" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/><path d="M6.5 9v4a2 2 0 0 0 2 2H14"/>',
+    doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+    chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+    code: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4"/>',
+    link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+    down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'
+  };
+  function linkIcon(l) {
+    const t = (l.label + " " + l.url).toLowerCase();
+    if (/mail|posta|gmail|outlook/.test(t)) return ICONS.mail;
+    if (/calend|agenda/.test(t)) return ICONS.calendar;
+    if (/onedrive|sharepoint|drive|dropbox|cloud|icloud/.test(t)) return ICONS.cloud;
+    if (/visio|diagram|draw|miro|figma/.test(t)) return ICONS.diagram;
+    if (/teams|slack|chat|whatsapp|telegram|mastodon/.test(t)) return ICONS.chat;
+    if (/github|gitlab|bitbucket|code/.test(t)) return ICONS.code;
+    if (/word|excel|docs|sheets|notion|office|powerpoint|onenote/.test(t)) return ICONS.doc;
+    return ICONS.link;
+  }
+
+  // ----- Ricerche e collegamenti nella pagina -----
+  function renderSearches() {
+    const box = document.getElementById("searches");
+    box.replaceChildren();
+    settings.searches.forEach((s, i) => {
+      const f = document.createElement("form");
+      f.className = "search";
+      f.innerHTML = `
+        <label></label>
+        <div class="search-field">
+          ${svgIcon(ICONS.search)}
+          <input type="search" autocomplete="off">
+          <button type="submit">${svgIcon(ICONS.arrow)}</button>
+        </div>`;
+      const id = "q-" + i;
+      const label = f.querySelector("label"), input = f.querySelector("input");
+      label.textContent = s.label;
+      label.htmlFor = id;
+      input.id = id;
+      input.placeholder = "Cerca su " + s.label;
+      f.querySelector("button").setAttribute("aria-label", "Cerca su " + s.label);
+      f.addEventListener("submit", e => {
+        e.preventDefault();
+        const q = input.value.trim();
+        if (!q) { input.focus(); return; }
+        location.href = s.url.includes("%s")
+          ? s.url.split("%s").join(encodeURIComponent(q))
+          : s.url + encodeURIComponent(q);
+      });
+      box.appendChild(f);
+    });
+  }
+  function renderLinks() {
+    const nav = document.getElementById("links");
+    nav.replaceChildren();
+    settings.links.forEach(l => {
+      const a = document.createElement("a");
+      a.href = l.url;
+      a.innerHTML = svgIcon(linkIcon(l));
+      a.append(l.label);
+      nav.appendChild(a);
+    });
+    nav.hidden = settings.links.length === 0;
+  }
+  function applySettings() {
+    applyTheme(settings.theme);
+    renderSearches();
+    renderLinks();
+    renderYear(new Date());   // marcatori sulla linea dell'anno
+  }
+  applySettings();
+
+  // ----- Finestra preferenze -----
+  const dlg = document.getElementById("prefs");
+  const prefsForm = document.getElementById("prefs-form");
+  const prefSearches = document.getElementById("pref-searches");
+  const prefLinks = document.getElementById("pref-links");
+  const prefMarkers = document.getElementById("pref-markers");
+  const prefsError = document.getElementById("prefs-error");
+  let draft = null;
+
+  const normUrl = u => {
+    u = (u || "").trim();
+    if (u && !/^[a-z][a-z0-9+.-]*:/i.test(u)) u = "https://" + u;
+    return u;
+  };
+  const iconBtn = (icon, action, label, disabled) =>
+    `<button class="icon-btn" type="button" data-action="${action}" aria-label="${label}" title="${label}"${disabled ? " disabled" : ""}>${svgIcon(ICONS[icon])}</button>`;
+
+  function renderDraft() {
+    prefsError.textContent = "";
+    // ricerche
+    prefSearches.replaceChildren();
+    draft.searches.forEach((s, i) => {
+      const row = document.createElement("div");
+      row.className = "row search-row";
+      row.dataset.index = i;
+      const opts = ENGINES.map(e => `<option value="${e.id}">${e.label}</option>`).join("") +
+                   `<option value="custom">Personalizzato…</option>`;
+      row.innerHTML = `
+        <select data-field="engine" aria-label="Motore">${opts}</select>
+        <input type="text" data-field="label" aria-label="Etichetta">
+        <input type="text" class="tpl" data-field="url" aria-label="Indirizzo di ricerca" placeholder="https://esempio.com/cerca?q=%s">
+        <input type="text" class="key" data-field="key" aria-label="Tasto scorciatoia" maxlength="1">
+        ${iconBtn("trash", "del-search", "Rimuovi", draft.searches.length <= 1)}`;
+      row.querySelector('[data-field="engine"]').value = engineById(s.engine) ? s.engine : "custom";
+      row.querySelector('[data-field="label"]').value = s.label;
+      const tpl = row.querySelector('[data-field="url"]');
+      tpl.value = s.url;
+      tpl.disabled = !!engineById(s.engine);
+      row.querySelector('[data-field="key"]').value = s.key || "";
+      prefSearches.appendChild(row);
+    });
+    // collegamenti
+    prefLinks.replaceChildren();
+    draft.links.forEach((l, i) => {
+      const row = document.createElement("div");
+      row.className = "row link-row";
+      row.dataset.index = i;
+      row.innerHTML = `
+        <input type="text" data-field="label" aria-label="Etichetta">
+        <input type="text" class="url" data-field="url" aria-label="Indirizzo" placeholder="https://…">
+        ${iconBtn("up", "up-link", "Sposta su", i === 0)}
+        ${iconBtn("down", "down-link", "Sposta giù", i === draft.links.length - 1)}
+        ${iconBtn("trash", "del-link", "Rimuovi", false)}`;
+      row.querySelector('[data-field="label"]').value = l.label;
+      row.querySelector('[data-field="url"]').value = l.url;
+      prefLinks.appendChild(row);
+    });
+    // marcatori
+    prefMarkers.replaceChildren();
+    draft.markers.forEach((mk, i) => {
+      const row = document.createElement("div");
+      row.className = "row marker-row";
+      row.dataset.index = i;
+      row.innerHTML = `
+        <input type="date" data-field="from" aria-label="Dal">
+        <input type="date" data-field="to" aria-label="Al (facoltativo)">
+        <input type="text" class="mlabel" data-field="label" aria-label="Nome" placeholder="Ferie, compleanno…">
+        <div class="swatches" role="radiogroup" aria-label="Colore">${MARKER_COLORS.map(c =>
+          `<label title="${c.label}"><input type="radio" name="mk-color-${i}" value="${c.id}" data-field="color" aria-label="${c.label}"${(mk.color || "grey") === c.id ? " checked" : ""}><span style="--sw: ${c.css}"></span></label>`).join("")}</div>
+        <label class="yearly"><input type="checkbox" data-field="yearly"> Ogni anno</label>
+        ${iconBtn("trash", "del-marker", "Rimuovi", false)}`;
+      row.querySelector('[data-field="from"]').value = mk.from || "";
+      row.querySelector('[data-field="to"]').value = mk.to || "";
+      row.querySelector('[data-field="label"]').value = mk.label || "";
+      row.querySelector('[data-field="yearly"]').checked = !!mk.yearly;
+      prefMarkers.appendChild(row);
+    });
+    prefsForm.querySelectorAll('input[name="theme"]').forEach(r => { r.checked = r.value === draft.theme; });
+    prefsForm.querySelector('input[name="showHolidays"]').checked = !!draft.showHolidays;
+  }
+
+  // aggiorna la bozza mentre si modifica
+  prefsForm.addEventListener("input", e => {
+    const el = e.target;
+    el.classList.remove("bad");
+    if (el.name === "theme") { draft.theme = el.value; applyTheme(draft.theme); return; } // anteprima
+    if (el.name === "showHolidays") { draft.showHolidays = el.checked; return; }
+    const row = el.closest(".row");
+    if (!row || !el.dataset.field) return;
+    const list = row.classList.contains("search-row") ? draft.searches
+               : row.classList.contains("marker-row") ? draft.markers : draft.links;
+    const item = list[+row.dataset.index];
+    if (el.type === "checkbox") { item[el.dataset.field] = el.checked; return; }
+    if (el.type === "radio") { item[el.dataset.field] = el.value; return; }
+    if (el.dataset.field === "engine") {
+      const eng = engineById(el.value), prevEng = engineById(item.engine);
+      item.engine = el.value;
+      if (eng) {
+        // cambia l'etichetta solo se era quella del motore precedente (o vuota)
+        // (anche se era una forma breve, es. "Wikipedia" per "Wikipedia (en)")
+        if (!item.label || (prevEng && prevEng.label.startsWith(item.label))) item.label = eng.label;
+        item.url = eng.url;
+      }
+      renderDraft();
+      if (!eng) prefSearches.children[+row.dataset.index].querySelector('[data-field="url"]').focus();
+      return;
+    }
+    item[el.dataset.field] = el.dataset.field === "key" ? el.value.toLowerCase() : el.value;
+  });
+
+  prefsForm.addEventListener("click", e => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    const row = btn.closest(".row");
+    const i = row ? +row.dataset.index : -1;
+    switch (btn.dataset.action) {
+      case "add-search": {
+        const used = new Set(draft.searches.map(s => s.engine));
+        const eng = ENGINES.find(x => !used.has(x.id)) || ENGINES[0];
+        draft.searches.push({ engine: eng.id, label: eng.label, url: eng.url, key: "" });
+        break;
+      }
+      case "del-search": draft.searches.splice(i, 1); break;
+      case "add-link": draft.links.push({ label: "", url: "" }); break;
+      case "add-marker": draft.markers.push({ from: "", to: "", label: "", yearly: false, color: "grey" }); break;
+      case "del-marker": draft.markers.splice(i, 1); break;
+      case "del-link": draft.links.splice(i, 1); break;
+      case "up-link": [draft.links[i - 1], draft.links[i]] = [draft.links[i], draft.links[i - 1]]; break;
+      case "down-link": [draft.links[i + 1], draft.links[i]] = [draft.links[i], draft.links[i + 1]]; break;
+      case "reset": draft = clone(DEFAULTS); applyTheme(draft.theme); break;
+      case "cancel": closePrefs(false); return;
+      default: return;
+    }
+    renderDraft();
+    if (btn.dataset.action.startsWith("add-")) {
+      const box = { "add-link": prefLinks, "add-marker": prefMarkers }[btn.dataset.action] || prefSearches;
+      const last = box.lastElementChild;
+      if (last) last.querySelector(btn.dataset.action === "add-marker" ? '[data-field="from"]' : '[data-field="label"]').focus();
+    }
+  });
+
+  // validazione e salvataggio
+  prefsForm.addEventListener("submit", e => {
+    e.preventDefault();
+    // le righe dei collegamenti lasciate vuote vengono scartate
+    draft.links = draft.links.filter(l => (l.label || "").trim() || (l.url || "").trim());
+    draft.markers = draft.markers.filter(m => (m.label || "").trim() || m.from || m.to);
+    renderDraft();
+    const errors = [];
+    const bad = (row, field, msg) => {
+      row.querySelector(`[data-field="${field}"]`).classList.add("bad");
+      errors.push(msg);
+    };
+    const keys = new Set();
+    [...prefSearches.children].forEach((row, i) => {
+      const s = draft.searches[i];
+      s.label = (s.label || "").trim();
+      if (!s.label) bad(row, "label", "Manca l'etichetta di un motore di ricerca.");
+      if (s.engine === "custom") {
+        s.url = normUrl(s.url);
+        row.querySelector('[data-field="url"]').value = s.url;
+        if (!/^https?:\/\/\S*%s/.test(s.url)) bad(row, "url", "L'indirizzo personalizzato deve contenere %s.");
+      }
+      s.key = (s.key || "").trim().toLowerCase().slice(0, 1);
+      if (s.key) {
+        if (keys.has(s.key)) bad(row, "key", `Il tasto "${s.key}" è usato due volte.`);
+        keys.add(s.key);
+      }
+    });
+    [...prefLinks.children].forEach((row, i) => {
+      const l = draft.links[i];
+      l.label = (l.label || "").trim();
+      l.url = normUrl(l.url);
+      row.querySelector('[data-field="url"]').value = l.url;
+      if (!l.label) bad(row, "label", "Manca l'etichetta di un collegamento.");
+      if (!/^https?:\/\/\S+$/.test(l.url)) bad(row, "url", "Un collegamento ha un indirizzo non valido.");
+    });
+    [...prefMarkers.children].forEach((row, i) => {
+      const mk = draft.markers[i];
+      mk.label = (mk.label || "").trim();
+      mk.yearly = !!mk.yearly;
+      if (!parseYMD(mk.from)) bad(row, "from", "Manca la data di un marcatore.");
+      if (!mk.label) bad(row, "label", "Manca il nome di un marcatore.");
+      if (mk.to && parseYMD(mk.from)) {
+        const a = parseYMD(mk.from), b = parseYMD(mk.to);
+        const sa = mk.yearly ? a.m * 100 + a.d : a.y * 10000 + a.m * 100 + a.d;
+        const sb = mk.yearly ? b.m * 100 + b.d : b.y * 10000 + b.m * 100 + b.d;
+        if (sb < sa) bad(row, "to", "La data di fine di un marcatore è prima di quella di inizio.");
+      }
+    });
+    if (errors.length) {
+      prefsError.textContent = errors[0];
+      const first = prefsForm.querySelector(".bad");
+      if (first) first.focus();
+      return;
+    }
+    settings = clone(draft);
+    if (!saveSettings(settings)) prefsError.textContent = "Impossibile salvare nel browser.";
+    applySettings();
+    closePrefs(true);
+  });
+
+  function openPrefs() {
+    draft = clone(settings);
+    renderDraft();
+    dlg.showModal();
+  }
+  function closePrefs(saved) {
+    if (!saved) applyTheme(settings.theme);  // annulla l'anteprima del tema
+    dlg.close();
+  }
+  dlg.addEventListener("cancel", e => { e.preventDefault(); closePrefs(false); }); // tasto Esc
+  dlg.addEventListener("click", e => { if (e.target === dlg) closePrefs(false); }); // clic sullo sfondo
+  document.getElementById("open-prefs").addEventListener("click", openPrefs);
+
+  // ---------- Favicon: il giorno del mese ----------
+  // Disegnata su canvas e usata come PNG, così funziona in tutti i browser (Safari compreso).
+  // Segue il tema chiaro/scuro del sistema, perché è quello delle schede del browser.
+  function renderFavicon(now) {
+    const S = 64, c = document.createElement("canvas");
+    c.width = c.height = S;
+    const g = c.getContext("2d");
+    const dark = darkQuery && darkQuery.matches;
+    const round = (x, y, w, h, r) => { g.beginPath(); g.roundRect(x, y, w, h, r); };
+    // foglio del calendario
+    round(2, 2, S - 4, S - 4, 12);
+    g.fillStyle = dark ? "#2c2c30" : "#ffffff";
+    g.fill();
+    if (!dark) { g.lineWidth = 2; g.strokeStyle = "#d6d6d6"; g.stroke(); }
+    // fascia superiore arancione
+    g.save();
+    round(2, 2, S - 4, S - 4, 12);
+    g.clip();
+    g.fillStyle = "#f0912f";
+    g.fillRect(0, 0, S, 12);
+    g.restore();
+    // numero grande, senza grazie e in grassetto per leggerlo anche a 16 px
+    const day = String(now.getDate());
+    g.fillStyle = dark ? "#f2f0ed" : "#1a1a1a";
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.font = `700 ${day.length > 1 ? 44 : 48}px -apple-system, "Helvetica Neue", Arial, sans-serif`;
+    g.fillText(day, S / 2, 39);
+    document.getElementById("favicon").href = c.toDataURL("image/png");
+  }
+  if (darkQuery) darkQuery.addEventListener("change", () => renderFavicon(new Date()));
+
+  // ---------- Loop ----------
+  let lastDay = null;
+  function tick() {
+    const now = new Date();
+    if (key(now) !== lastDay) {
+      lastDay = key(now);
+      renderDate(now);
+      renderCalendars(now);
+      renderYear(now);
+      renderSunDay(now);
+      renderFavicon(now);
+    }
+  }
+  setInterval(() => renderSunDot(new Date()), 30000);
+  tick();
+  renderSunDot(new Date());
+  setInterval(tick, 1000);
+
+  // Orologio analogico: movimento continuo (sweep) a ogni frame
+  const sweep = () => { renderAnalog(new Date()); requestAnimationFrame(sweep); };
+  requestAnimationFrame(sweep);
+
+  // Focus sulla prima ricerca all'apertura
+  const focusFirstSearch = () => { const i = document.getElementById("q-0"); if (i && !dlg.open) i.focus(); };
+  focusFirstSearch();
+  window.addEventListener("load", focusFirstSearch);
+
+  // Scorciatoie: il tasto scelto nelle preferenze porta al relativo campo di ricerca
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey || e.metaKey || e.altKey || dlg.open) return;
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+      if (e.key === "Escape") document.activeElement.blur();
+      return;
+    }
+    const i = settings.searches.findIndex(s => s.key && s.key === e.key.toLowerCase());
+    if (i >= 0) {
+      e.preventDefault();
+      const input = document.getElementById("q-" + i);
+      input.focus();
+      input.select();
+    }
+  });
+})();
+</script>
+</body>
+</html>

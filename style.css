@@ -327,6 +327,27 @@ main {
 .yearbar {
   grid-column: 1 / -1; grid-row: 3;
   margin-top: 80px;
+  position: relative;  /* riferimento per il tooltip dei marcatori */
+}
+/* Tooltip degli spilli: riquadro nei colori del tema, sopra lo spillo, con una freccia.
+   La freccia è un quadratino ruotato con lo stesso sfondo, sovrapposto al bordo inferiore:
+   copre quel tratto di bordo, così non resta una linea tra riquadro e freccia. */
+.year-tip {
+  position: absolute; z-index: 10;
+  transform: translate(-50%, -100%);
+  padding: 5px 10px; border-radius: 7px;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+  font-size: 12px; line-height: 1.3; white-space: nowrap;
+  pointer-events: none;
+}
+.year-tip::after {
+  content: ""; position: absolute; top: 100%; left: var(--ax, 50%);
+  width: 8px; height: 8px; margin: -4px 0 0 -4px;
+  background: inherit;
+  border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  transform: rotate(45deg);
 }
 /* Anno come linea sottile continua, puntini sui confini tra i mesi
    e pallino arancione su oggi */
@@ -386,7 +407,7 @@ main {
 /* ---------- Preferenze ---------- */
 .prefs {
   /* i limiti tengono conto dello zoom degli schermi grandi */
-  width: min(760px, calc(100vw / var(--page-zoom) - 32px));
+  width: min(1100px, calc(100vw / var(--page-zoom) - 32px));
   max-height: calc(100vh / var(--page-zoom) - 64px);
   padding: 0;
   border: 1px solid var(--border);
@@ -409,7 +430,8 @@ main {
   margin: 24px 0 4px;
   font-family: var(--serif); font-weight: 400; font-size: 19px;
 }
-.prefs-section .hint { margin: 0 0 12px; font-size: 12.5px; color: var(--text-3); line-height: 1.5; }
+.prefs-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 40px; }
+.prefs-section .hint { max-width: 85ch; /* righe di testo leggibili anche con la finestra larga */ margin: 0 0 12px; font-size: 12.5px; color: var(--text-3); line-height: 1.5; }
 .prefs-section .hint code { font-size: 12px; background: var(--chip-bg); padding: 1px 4px; border-radius: 4px; }
 .prefs input[type="text"], .prefs input[type="date"], .prefs select {
   height: 36px; min-width: 0; width: 100%;
@@ -425,7 +447,7 @@ main {
 .prefs .key { text-align: center; text-transform: lowercase; }
 .row { display: grid; gap: 8px; align-items: center; margin-bottom: 8px; }
 .row-head { font-size: 11.5px; color: var(--text-3); margin-bottom: 6px; }
-.search-row { grid-template-columns: 36px 170px minmax(0, 1fr) minmax(0, 1.6fr) 56px 32px; }
+.search-row { grid-template-columns: 36px 200px minmax(0, 1fr) minmax(0, 2fr) 56px 32px; }
 .link-row { grid-template-columns: 36px minmax(0, 1fr) minmax(0, 2fr) 32px 32px 32px; }
 /* Scelta dell'icona di un collegamento: pulsante con l'icona attuale e pannello a griglia */
 .icon-pick {
@@ -457,7 +479,7 @@ main {
 .icon-choice:hover { background: var(--hover); color: var(--text); }
 .icon-choice[hidden] { display: none; }
 .marker-row { grid-template-columns: 138px 138px minmax(0, 1fr) 118px 92px 32px; }
-.loc-row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto; }
+.loc-row { grid-template-columns: minmax(0, 1fr) 160px 160px auto; }
 .loc-row .find { white-space: nowrap; }
 .swatches { display: flex; gap: 4px; }
 .swatches label { position: relative; display: block; }
@@ -516,12 +538,16 @@ main {
 .btn.quiet { border-color: transparent; background: transparent; color: var(--text-3); padding: 0 4px; }
 .btn.quiet:hover { color: var(--text); background: transparent; text-decoration: underline; }
 @media (max-width: 700px) {
-  .search-row { grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1fr) 56px 32px; }
-  .search-row .tpl { grid-column: 1 / -1; grid-row: 2; }
+  /* motore: icona, menu, tasto e cestino sulla prima riga; etichetta e indirizzo sotto */
+  .search-row { grid-template-columns: 36px minmax(0, 1fr) 56px 32px; }
+  .search-row [data-field="label"] { grid-column: 1 / -1; grid-row: 2; }
+  .search-row .tpl { grid-column: 1 / -1; grid-row: 3; }
+  .search-row { margin-bottom: 16px; }
   .link-row { grid-template-columns: 36px minmax(0, 1fr) 32px 32px 32px; }
   .link-row .url { grid-column: 1 / -1; grid-row: 2; }
   .marker-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px; }
   .loc-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .prefs-pair { grid-template-columns: minmax(0, 1fr); }
   .loc-row .lname, .loc-row .find { grid-column: 1 / -1; }
   .marker-row .mlabel { grid-column: 1 / 3; grid-row: 2; }
   .marker-row .swatches { grid-column: 1 / 3; grid-row: 3; }

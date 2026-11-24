@@ -17,7 +17,7 @@ L'interfaccia principale è disponibile in italiano, inglese, francese, tedesco 
   3. se manca anche quella (sito senza icona o pagina senza rete), un'icona generica scelta in base a nome o indirizzo.
 
   Nelle preferenze si può scegliere l'icona di ogni collegamento e di ogni motore di ricerca. Le icone sono di [Tabler Icons](https://tabler.io/icons) (licenza MIT).
-- **Linea dell'anno** in fondo: giorni trascorsi e rimanenti, rombi all'inizio di ogni mese e marcatori personali (giorni singoli come spilli, periodi come parentesi graffe con descrizione).
+- **Linea dell'anno** in fondo: giorni trascorsi e rimanenti, rombi all'inizio di ogni mese e marcatori personali (giorni singoli come spilli, periodi come parentesi graffe con descrizione). Passando il mouse su uno spillo compare subito sopra di esso un riquadro con il nome e i giorni mancanti nel formato `20g [12]`: 20 giorni, di cui 12 lavorativi (dal lunedì al venerdì, festività escluse, senza contare oggi e il giorno del marcatore); per oggi indica "oggi", per le date passate quanti giorni fa. I periodi non hanno tooltip: la loro descrizione è già scritta sotto la parentesi.
 - **Favicon** che mostra il giorno del mese, come un foglio di calendario.
 
 ## Preferenze

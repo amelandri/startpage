@@ -7,6 +7,7 @@
       name: "Italiano", title: "Home", prefs: "Preferenze", links: "Collegamenti",
       searchOn: "Cerca su {0}", noHolidays: "Nessuna festività",
       sun: "Alba {0} · tramonto {1}", year: "{0} giorni trascorsi · {1} rimanenti", yearAria: "Avanzamento dell'anno",
+      left: "{0}g [{1}]", daysAgo: ["{0} giorno fa", "{0} giorni fa"], today: "oggi",
       holidays: { newYear: "Capodanno", epiphany: "Epifania", liberation: "Festa della Liberazione",
         labour: "Festa dei Lavoratori", republic: "Festa della Repubblica", assumption: "Ferragosto",
         francis: "San Francesco d'Assisi", allSaints: "Ognissanti", immaculate: "Immacolata Concezione",
@@ -16,6 +17,7 @@
       name: "English", title: "Home", prefs: "Preferences", links: "Links",
       searchOn: "Search {0}", noHolidays: "No holidays",
       sun: "Sunrise {0} · sunset {1}", year: "{0} days passed · {1} left", yearAria: "Year progress",
+      left: "{0}d [{1}]", daysAgo: ["{0} day ago", "{0} days ago"], today: "today",
       holidays: { newYear: "New Year's Day", epiphany: "Epiphany", liberation: "Liberation Day",
         labour: "Labour Day", republic: "Republic Day", assumption: "Assumption Day",
         francis: "St Francis of Assisi", allSaints: "All Saints' Day", immaculate: "Immaculate Conception",
@@ -25,6 +27,7 @@
       name: "Français", title: "Accueil", prefs: "Préférences", links: "Liens",
       searchOn: "Rechercher sur {0}", noHolidays: "Aucun jour férié",
       sun: "Lever {0} · coucher {1}", year: "{0} jours écoulés · {1} restants", yearAria: "Avancement de l'année",
+      left: "{0}j [{1}]", daysAgo: ["il y a {0} jour", "il y a {0} jours"], today: "aujourd'hui",
       holidays: { newYear: "Jour de l'An", epiphany: "Épiphanie", liberation: "Fête de la Libération",
         labour: "Fête du Travail", republic: "Fête de la République", assumption: "Assomption",
         francis: "Saint François d'Assise", allSaints: "Toussaint", immaculate: "Immaculée Conception",
@@ -34,6 +37,7 @@
       name: "Deutsch", title: "Startseite", prefs: "Einstellungen", links: "Links",
       searchOn: "Auf {0} suchen", noHolidays: "Keine Feiertage",
       sun: "Sonnenaufgang {0} · Sonnenuntergang {1}", year: "{0} Tage vergangen · {1} übrig", yearAria: "Jahresfortschritt",
+      left: "{0}T [{1}]", daysAgo: ["vor {0} Tag", "vor {0} Tagen"], today: "heute",
       holidays: { newYear: "Neujahr", epiphany: "Heilige Drei Könige", liberation: "Tag der Befreiung",
         labour: "Tag der Arbeit", republic: "Tag der Republik", assumption: "Mariä Himmelfahrt",
         francis: "Franz von Assisi", allSaints: "Allerheiligen", immaculate: "Mariä Empfängnis",
@@ -43,6 +47,7 @@
       name: "Español", title: "Inicio", prefs: "Preferencias", links: "Enlaces",
       searchOn: "Buscar en {0}", noHolidays: "Sin festivos",
       sun: "Amanecer {0} · atardecer {1}", year: "{0} días pasados · {1} restantes", yearAria: "Progreso del año",
+      left: "{0}d [{1}]", daysAgo: ["hace {0} día", "hace {0} días"], today: "hoy",
       holidays: { newYear: "Año Nuevo", epiphany: "Epifanía", liberation: "Día de la Liberación",
         labour: "Día del Trabajo", republic: "Día de la República", assumption: "Asunción",
         francis: "San Francisco de Asís", allSaints: "Todos los Santos", immaculate: "Inmaculada Concepción",
@@ -315,8 +320,28 @@
            `L${xb - r} ${top + h} Q${xb} ${top + h} ${xb} ${top}`;
   }
 
+  // Testo del tooltip di un marcatore: "Nome — 20g [12]" (giorni mancanti [lavorativi]).
+  // I giorni lavorativi sono quelli tra oggi e il marcatore (esclusi entrambi),
+  // dal lunedì al venerdì e senza festività. Per oggi e le date passate: "oggi",
+  // "N giorni fa". Usato solo per gli spilli (i periodi non hanno tooltip).
+  const isWorkday = d => d.getDay() % 6 !== 0 && !holidays(d.getFullYear())[key(d)];
+  const plural = (forms, n) => fmtText(forms[new Intl.PluralRules(LOCALE).select(n) === "one" ? 0 : 1], n);
+  function markerTip(label, start, end) {
+    const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const days = (a, b) => Math.round((b - a) / 86400000);  // arrotonda: gestisce l'ora legale
+    const diff = days(today, start);
+    let when;
+    if (diff > 0) {
+      let work = 0;
+      for (let d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1); d < start; d.setDate(d.getDate() + 1))
+        if (isWorkday(d)) work++;
+      when = fmtText(T.left, diff, work);  // "20g [12]": giorni [lavorativi]
+    } else if (diff === 0) when = T.today;
+    else when = plural(T.daysAgo, days(end, today));
+    return `${label} — ${when}`;
+  }
+
   function markersSvg(y, total, width) {
-    const fmt = dt => dt.toLocaleDateString(LOCALE, { day: "numeric", month: "short" });
     const y0 = new Date(y, 0, 1), y1 = new Date(y, 11, 31);
     // 1) calcola posizione e tipo di ogni marcatore che cade nell'anno y
     const items = [];
@@ -337,8 +362,7 @@
         const x0 = (dayOfYear(vs) - 1) / total * 100;       // inizio del primo giorno
         const x1 = dayOfYear(ve) / total * 100;             // fine dell'ultimo giorno
         const range = +end !== +start;
-        items.push({ mk, x0, x1, range, lane: 0,
-                     when: range ? `${fmt(start)} – ${fmt(end)}` : fmt(start) });
+        items.push({ mk, x0, x1, range, lane: 0, tip: range ? "" : markerTip(mk.label, start, end) });
       });
     });
     // 2) periodi sovrapposti: quello che inizia dopo scende di una "corsia"
@@ -352,8 +376,12 @@
     });
     // 3) disegno
     let out = "";
-    items.forEach(({ mk, x0, x1, range, lane, when }) => {
-      out += `<g class="marker" style="--mk: ${markerColor(mk.color)}"><title>${escapeXml(mk.label)} · ${when}</title>`;
+    items.forEach(({ mk, x0, x1, range, lane, tip }) => {
+      // niente <title>: il tooltip nativo compare in ritardo; gli spilli hanno data-tip
+      // (vedi showYearTip), i periodi nessun tooltip perché la descrizione è già visibile
+      const t = escapeXml(tip);
+      out += `<g class="marker" style="--mk: ${markerColor(mk.color)}"` +
+             (tip ? ` data-tip="${t}" role="img" aria-label="${t}">` : ">");
       if (range) {
         // periodo: parentesi graffa sotto la linea e descrizione sotto la punta
         const xa = x0 / 100 * width, xb = x1 / 100 * width, off = lane * LANE;
@@ -387,6 +415,32 @@
     return out;
   }
 
+  // Tooltip degli spilli: compare subito al passaggio del mouse, sopra lo spillo,
+  // senza uscire dai bordi della linea. I periodi non ne hanno.
+  const yearLineEl = document.getElementById("year-line"), yearTip = document.getElementById("year-tip");
+  function showYearTip(g) {
+    yearTip.textContent = g.dataset.tip;
+    yearTip.hidden = false;
+    const bar = yearTip.offsetParent;            // .yearbar
+    const z = bar.currentCSSZoom || 1;           // zoom degli schermi grandi: misure in px CSS
+    const b = bar.getBoundingClientRect();
+    const r = g.querySelector(".flag").getBoundingClientRect();  // pallino dello spillo
+    const cx = (r.left + r.width / 2 - b.left) / z;
+    const w = yearTip.offsetWidth, W = bar.clientWidth;
+    const left = Math.min(Math.max(cx, w / 2), W - w / 2);
+    yearTip.style.left = left + "px";
+    yearTip.style.top = (r.top - b.top) / z - 9 + "px";  // spazio per la freccia
+    yearTip.style.setProperty("--ax", cx - left + w / 2 + "px");  // freccia sul punto giusto
+  }
+  let tipFor = null;  // marcatore mostrato: passare tra pallino e stelo non lo riposiziona
+  const hideYearTip = () => { yearTip.hidden = true; tipFor = null; };
+  yearLineEl.addEventListener("pointerover", e => {
+    const g = e.target.closest(".marker[data-tip]");  // solo spilli
+    if (!g) hideYearTip();
+    else if (g !== tipFor) { tipFor = g; showYearTip(g); }
+  });
+  yearLineEl.addEventListener("pointerleave", hideYearTip);
+
   // le parentesi dei periodi sono in pixel: ridisegna quando la linea cambia larghezza
   let yearLineW = 0;
   new ResizeObserver(entries => {
@@ -409,6 +463,7 @@
       svg += `<svg x="${at}%" y="4.5" overflow="visible"><path class="mark" d="${DIAMOND}"/></svg>`;
     }
     svg += markersSvg(y, total, line.clientWidth);
+    hideYearTip();  // il marcatore sotto il mouse viene ricreato
     svg += `<circle class="dot" cx="${pct}%" cy="4.5" r="4.5"/>`;  // come il pallino del sole
     line.innerHTML = svg;
     line.title = fmtText(T.year, done, total - done);

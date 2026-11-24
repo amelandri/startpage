@@ -103,6 +103,7 @@
         <span class="brace" aria-hidden="true">{</span>
         <span class="year-num" id="year-left"></span>
       </div>
+      <div class="year-tip" id="year-tip" role="tooltip" hidden></div>
     </footer>
   </main>
 
@@ -119,20 +120,22 @@
         </button>
       </div>
       <div class="prefs-body">
-        <section class="prefs-section">
-          <h3>Language</h3>
-          <p class="hint">Language of the start page: dates, calendars, holidays and labels. "Automatic" follows the browser. Preferences are always in English.</p>
-          <select name="language" class="lang" aria-label="Language"></select>
-        </section>
+        <div class="prefs-pair">  <!-- Language e Theme affiancate -->
+          <section class="prefs-section">
+            <h3>Language</h3>
+            <p class="hint">Language of the start page: dates, calendars, holidays and labels. "Automatic" follows the browser. Preferences are always in English.</p>
+            <select name="language" class="lang" aria-label="Language"></select>
+          </section>
 
-        <section class="prefs-section">
-          <h3>Theme</h3>
-          <div class="seg" role="radiogroup" aria-label="Theme">
-            <label><input type="radio" name="theme" value="system"><span>System</span></label>
-            <label><input type="radio" name="theme" value="light"><span>Light</span></label>
-            <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
-          </div>
-        </section>
+          <section class="prefs-section">
+            <h3>Theme</h3>
+            <div class="seg" role="radiogroup" aria-label="Theme">
+              <label><input type="radio" name="theme" value="system"><span>System</span></label>
+              <label><input type="radio" name="theme" value="light"><span>Light</span></label>
+              <label><input type="radio" name="theme" value="dark"><span>Dark</span></label>
+            </div>
+          </section>
+        </div>
 
         <section class="prefs-section">
           <h3>Location</h3>

@@ -7,7 +7,7 @@
       name: "Italiano", title: "Home", prefs: "Preferenze", links: "Collegamenti",
       searchOn: "Cerca su {0}", noHolidays: "Nessuna festività",
       sun: "Alba {0} · tramonto {1}", year: "{0} giorni trascorsi · {1} rimanenti", yearAria: "Avanzamento dell'anno",
-      left: "{0}g [{1}]", daysAgo: ["{0} giorno fa", "{0} giorni fa"], today: "oggi",
+      left: ["{0}g ({1} lavorativo)", "{0}g ({1} lavorativi)"], daysAgo: ["{0} giorno fa", "{0} giorni fa"], today: "oggi",
       holidays: { newYear: "Capodanno", epiphany: "Epifania", liberation: "Festa della Liberazione",
         labour: "Festa dei Lavoratori", republic: "Festa della Repubblica", assumption: "Ferragosto",
         francis: "San Francesco d'Assisi", allSaints: "Ognissanti", immaculate: "Immacolata Concezione",
@@ -17,7 +17,7 @@
       name: "English", title: "Home", prefs: "Preferences", links: "Links",
       searchOn: "Search {0}", noHolidays: "No holidays",
       sun: "Sunrise {0} · sunset {1}", year: "{0} days passed · {1} left", yearAria: "Year progress",
-      left: "{0}d [{1}]", daysAgo: ["{0} day ago", "{0} days ago"], today: "today",
+      left: ["{0}d ({1} working day)", "{0}d ({1} working days)"], daysAgo: ["{0} day ago", "{0} days ago"], today: "today",
       holidays: { newYear: "New Year's Day", epiphany: "Epiphany", liberation: "Liberation Day",
         labour: "Labour Day", republic: "Republic Day", assumption: "Assumption Day",
         francis: "St Francis of Assisi", allSaints: "All Saints' Day", immaculate: "Immaculate Conception",
@@ -27,7 +27,7 @@
       name: "Français", title: "Accueil", prefs: "Préférences", links: "Liens",
       searchOn: "Rechercher sur {0}", noHolidays: "Aucun jour férié",
       sun: "Lever {0} · coucher {1}", year: "{0} jours écoulés · {1} restants", yearAria: "Avancement de l'année",
-      left: "{0}j [{1}]", daysAgo: ["il y a {0} jour", "il y a {0} jours"], today: "aujourd'hui",
+      left: ["{0}j ({1} jour ouvré)", "{0}j ({1} jours ouvrés)"], daysAgo: ["il y a {0} jour", "il y a {0} jours"], today: "aujourd'hui",
       holidays: { newYear: "Jour de l'An", epiphany: "Épiphanie", liberation: "Fête de la Libération",
         labour: "Fête du Travail", republic: "Fête de la République", assumption: "Assomption",
         francis: "Saint François d'Assise", allSaints: "Toussaint", immaculate: "Immaculée Conception",
@@ -37,7 +37,7 @@
       name: "Deutsch", title: "Startseite", prefs: "Einstellungen", links: "Links",
       searchOn: "Auf {0} suchen", noHolidays: "Keine Feiertage",
       sun: "Sonnenaufgang {0} · Sonnenuntergang {1}", year: "{0} Tage vergangen · {1} übrig", yearAria: "Jahresfortschritt",
-      left: "{0}T [{1}]", daysAgo: ["vor {0} Tag", "vor {0} Tagen"], today: "heute",
+      left: ["{0}T ({1} Arbeitstag)", "{0}T ({1} Arbeitstage)"], daysAgo: ["vor {0} Tag", "vor {0} Tagen"], today: "heute",
       holidays: { newYear: "Neujahr", epiphany: "Heilige Drei Könige", liberation: "Tag der Befreiung",
         labour: "Tag der Arbeit", republic: "Tag der Republik", assumption: "Mariä Himmelfahrt",
         francis: "Franz von Assisi", allSaints: "Allerheiligen", immaculate: "Mariä Empfängnis",
@@ -47,7 +47,7 @@
       name: "Español", title: "Inicio", prefs: "Preferencias", links: "Enlaces",
       searchOn: "Buscar en {0}", noHolidays: "Sin festivos",
       sun: "Amanecer {0} · atardecer {1}", year: "{0} días pasados · {1} restantes", yearAria: "Progreso del año",
-      left: "{0}d [{1}]", daysAgo: ["hace {0} día", "hace {0} días"], today: "hoy",
+      left: ["{0}d ({1} día laborable)", "{0}d ({1} días laborables)"], daysAgo: ["hace {0} día", "hace {0} días"], today: "hoy",
       holidays: { newYear: "Año Nuevo", epiphany: "Epifanía", liberation: "Día de la Liberación",
         labour: "Día del Trabajo", republic: "Día de la República", assumption: "Asunción",
         francis: "San Francisco de Asís", allSaints: "Todos los Santos", immaculate: "Inmaculada Concepción",
@@ -320,12 +320,15 @@
            `L${xb - r} ${top + h} Q${xb} ${top + h} ${xb} ${top}`;
   }
 
-  // Testo del tooltip di un marcatore: "Nome — 20g [12]" (giorni mancanti [lavorativi]).
+  // Testo del tooltip di uno spillo: "08/12 Nome 20g (12 lavorativi)": data (giorno/mese
+  // nell'ordine della lingua), nome, giorni mancanti e quanti di questi sono lavorativi.
   // I giorni lavorativi sono quelli tra oggi e il marcatore (esclusi entrambi),
   // dal lunedì al venerdì e senza festività. Per oggi e le date passate: "oggi",
   // "N giorni fa". Usato solo per gli spilli (i periodi non hanno tooltip).
   const isWorkday = d => d.getDay() % 6 !== 0 && !holidays(d.getFullYear())[key(d)];
-  const plural = (forms, n) => fmtText(forms[new Intl.PluralRules(LOCALE).select(n) === "one" ? 0 : 1], n);
+  // forme [singolare, plurale]: sceglie in base a n, poi sostituisce i segnaposto con args
+  const plural = (forms, n, ...args) =>
+    fmtText(forms[new Intl.PluralRules(LOCALE).select(n) === "one" ? 0 : 1], ...(args.length ? args : [n]));
   function markerTip(label, start, end) {
     const now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const days = (a, b) => Math.round((b - a) / 86400000);  // arrotonda: gestisce l'ora legale
@@ -335,10 +338,11 @@
       let work = 0;
       for (let d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1); d < start; d.setDate(d.getDate() + 1))
         if (isWorkday(d)) work++;
-      when = fmtText(T.left, diff, work);  // "20g [12]": giorni [lavorativi]
+      when = plural(T.left, work, diff, work);  // "20g (12 lavorativi)": singolare/plurale sui lavorativi
     } else if (diff === 0) when = T.today;
     else when = plural(T.daysAgo, days(end, today));
-    return `${label} — ${when}`;
+    const date = start.toLocaleDateString(LOCALE, { day: "2-digit", month: "2-digit" });  // "08/12"
+    return `${date} ${label} ${when}`;
   }
 
   function markersSvg(y, total, width) {

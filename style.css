@@ -357,6 +357,20 @@ main {
 .year-line .track { stroke: var(--text-4); stroke-width: 1; }
 .year-line .mark { fill: var(--text-4); }  /* rombo a lati appena concavi a inizio mese */
 .year-line .dot { fill: var(--today); }
+/* tacche e numeri dei giorni (vista ingrandita breve) */
+.year-line .day-tick { stroke: var(--text-4); stroke-width: 1; shape-rendering: crispEdges; }
+.year-line .day-tick.month { stroke: var(--text-3); }
+.year-line .day-num {
+  fill: var(--text-3); font-family: var(--sans); font-size: 10px;
+  text-anchor: middle; font-variant-numeric: tabular-nums;
+}
+.year-line .day-num.weekend { fill: var(--text-4); }
+.year-line .day-num.holiday { fill: var(--holiday); }
+/* il pallino di oggi è il pulsante dello zoom: alone al passaggio del mouse e col focus */
+.year-line .today { cursor: pointer; outline: none; }
+.year-line .today-hit { fill: transparent; }
+.year-line .today:hover .dot,
+.year-line .today:focus-visible .dot { stroke: var(--today); stroke-opacity: .3; stroke-width: 7; }
 /* Marcatori personali: bandierina sul giorno, tratto più spesso per i periodi */
 /* Colori dei marcatori: --mk è impostato per ogni marcatore (vedi MARKER_COLORS) */
 .year-line .marker { --mk: var(--text-2); }

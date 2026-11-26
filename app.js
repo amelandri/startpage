@@ -6,7 +6,7 @@
     it: {
       name: "Italiano", title: "Home", prefs: "Preferenze", links: "Collegamenti",
       searchOn: "Cerca su {0}", noHolidays: "Nessuna festività",
-      sun: "Alba {0} · tramonto {1}", year: "{0} giorni trascorsi · {1} rimanenti", yearAria: "Avanzamento dell'anno",
+      sun: "Alba {0} · tramonto {1}", year: "{0} giorni trascorsi · {1} rimanenti", yearAria: "Avanzamento dell'anno", zoomIn: "Mostra da oggi a fine anno", zoomOut: "Mostra tutto l'anno",
       left: ["{0}g ({1} lavorativo)", "{0}g ({1} lavorativi)"], daysAgo: ["{0} giorno fa", "{0} giorni fa"], today: "oggi",
       holidays: { newYear: "Capodanno", epiphany: "Epifania", liberation: "Festa della Liberazione",
         labour: "Festa dei Lavoratori", republic: "Festa della Repubblica", assumption: "Ferragosto",
@@ -16,7 +16,7 @@
     en: {
       name: "English", title: "Home", prefs: "Preferences", links: "Links",
       searchOn: "Search {0}", noHolidays: "No holidays",
-      sun: "Sunrise {0} · sunset {1}", year: "{0} days passed · {1} left", yearAria: "Year progress",
+      sun: "Sunrise {0} · sunset {1}", year: "{0} days passed · {1} left", yearAria: "Year progress", zoomIn: "Show from today to year end", zoomOut: "Show the whole year",
       left: ["{0}d ({1} working day)", "{0}d ({1} working days)"], daysAgo: ["{0} day ago", "{0} days ago"], today: "today",
       holidays: { newYear: "New Year's Day", epiphany: "Epiphany", liberation: "Liberation Day",
         labour: "Labour Day", republic: "Republic Day", assumption: "Assumption Day",
@@ -26,7 +26,7 @@
     fr: {
       name: "Français", title: "Accueil", prefs: "Préférences", links: "Liens",
       searchOn: "Rechercher sur {0}", noHolidays: "Aucun jour férié",
-      sun: "Lever {0} · coucher {1}", year: "{0} jours écoulés · {1} restants", yearAria: "Avancement de l'année",
+      sun: "Lever {0} · coucher {1}", year: "{0} jours écoulés · {1} restants", yearAria: "Avancement de l'année", zoomIn: "Afficher d'aujourd'hui à la fin de l'année", zoomOut: "Afficher toute l'année",
       left: ["{0}j ({1} jour ouvré)", "{0}j ({1} jours ouvrés)"], daysAgo: ["il y a {0} jour", "il y a {0} jours"], today: "aujourd'hui",
       holidays: { newYear: "Jour de l'An", epiphany: "Épiphanie", liberation: "Fête de la Libération",
         labour: "Fête du Travail", republic: "Fête de la République", assumption: "Assomption",
@@ -36,7 +36,7 @@
     de: {
       name: "Deutsch", title: "Startseite", prefs: "Einstellungen", links: "Links",
       searchOn: "Auf {0} suchen", noHolidays: "Keine Feiertage",
-      sun: "Sonnenaufgang {0} · Sonnenuntergang {1}", year: "{0} Tage vergangen · {1} übrig", yearAria: "Jahresfortschritt",
+      sun: "Sonnenaufgang {0} · Sonnenuntergang {1}", year: "{0} Tage vergangen · {1} übrig", yearAria: "Jahresfortschritt", zoomIn: "Von heute bis Jahresende anzeigen", zoomOut: "Ganzes Jahr anzeigen",
       left: ["{0}T ({1} Arbeitstag)", "{0}T ({1} Arbeitstage)"], daysAgo: ["vor {0} Tag", "vor {0} Tagen"], today: "heute",
       holidays: { newYear: "Neujahr", epiphany: "Heilige Drei Könige", liberation: "Tag der Befreiung",
         labour: "Tag der Arbeit", republic: "Tag der Republik", assumption: "Mariä Himmelfahrt",
@@ -46,7 +46,7 @@
     es: {
       name: "Español", title: "Inicio", prefs: "Preferencias", links: "Enlaces",
       searchOn: "Buscar en {0}", noHolidays: "Sin festivos",
-      sun: "Amanecer {0} · atardecer {1}", year: "{0} días pasados · {1} restantes", yearAria: "Progreso del año",
+      sun: "Amanecer {0} · atardecer {1}", year: "{0} días pasados · {1} restantes", yearAria: "Progreso del año", zoomIn: "Mostrar de hoy a fin de año", zoomOut: "Mostrar todo el año",
       left: ["{0}d ({1} día laborable)", "{0}d ({1} días laborables)"], daysAgo: ["hace {0} día", "hace {0} días"], today: "hoy",
       holidays: { newYear: "Año Nuevo", epiphany: "Epifanía", liberation: "Día de la Liberación",
         labour: "Día del Trabajo", republic: "Día de la República", assumption: "Asunción",
@@ -345,7 +345,10 @@
     return `${date} ${label} ${when}`;
   }
 
-  function markersSvg(y, total, width) {
+  // from: primo giorno visibile (indice da 0): 0 per tutto l'anno, oggi nella vista ingrandita.
+  // shift: di quanto abbassare le parentesi dei periodi (per lasciare posto alle tacche dei giorni)
+  function markersSvg(y, total, width, from, shift = 0) {
+    const pos = d => (d - from) / (total - from) * 100;  // indice del giorno → % della linea
     const y0 = new Date(y, 0, 1), y1 = new Date(y, 11, 31);
     // 1) calcola posizione e tipo di ogni marcatore che cade nell'anno y
     const items = [];
@@ -363,8 +366,9 @@
         }
         if (end < start || end < y0 || start > y1) return;  // non valido o fuori dall'anno
         const vs = start < y0 ? y0 : start, ve = end > y1 ? y1 : end;
-        const x0 = (dayOfYear(vs) - 1) / total * 100;       // inizio del primo giorno
-        const x1 = dayOfYear(ve) / total * 100;             // fine dell'ultimo giorno
+        const d0 = dayOfYear(vs) - 1, d1 = dayOfYear(ve);   // inizio del primo giorno, fine dell'ultimo
+        if (d1 <= from) return;                             // già passato (vista ingrandita)
+        const x0 = pos(Math.max(d0, from)), x1 = pos(d1);   // i periodi in corso partono da oggi
         const range = +end !== +start;
         items.push({ mk, x0, x1, range, lane: 0, tip: range ? "" : markerTip(mk.label, start, end) });
       });
@@ -388,7 +392,7 @@
              (tip ? ` data-tip="${t}" role="img" aria-label="${t}">` : ">");
       if (range) {
         // periodo: parentesi graffa sotto la linea e descrizione sotto la punta
-        const xa = x0 / 100 * width, xb = x1 / 100 * width, off = lane * LANE;
+        const xa = x0 / 100 * width, xb = x1 / 100 * width, off = lane * LANE + shift;
         out += `<rect class="hit" x="${xa}" y="2" width="${xb - xa}" height="${38 + off}"/>` +
                `<line class="span" x1="${xa}" y1="4.5" x2="${xb}" y2="4.5"/>` +
                `<path class="brace" d="${bracePath(xa, xb, 12 + off, 5)}"/>` +
@@ -444,6 +448,16 @@
     else if (g !== tipFor) { tipFor = g; showYearTip(g); }
   });
   yearLineEl.addEventListener("pointerleave", hideYearTip);
+  // clic (o Invio/Spazio) sul pallino di oggi: alterna anno intero e da oggi a fine anno
+  function toggleYearZoom() {
+    yearZoom = !yearZoom;
+    renderYear(new Date());
+    yearLineEl.querySelector(".today").focus({ preventScroll: true });
+  }
+  yearLineEl.addEventListener("click", e => { if (e.target.closest(".today")) toggleYearZoom(); });
+  yearLineEl.addEventListener("keydown", e => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.closest(".today")) { e.preventDefault(); toggleYearZoom(); }
+  });
 
   // le parentesi dei periodi sono in pixel: ridisegna quando la linea cambia larghezza
   let yearLineW = 0;
@@ -452,23 +466,71 @@
     if (w !== yearLineW) { yearLineW = w; renderYear(new Date()); }  // eseguito dopo lo script: settings c'è già
   }).observe(document.getElementById("year-line"));
 
+  // Tacche dei giorni sotto la linea, nella vista ingrandita con al massimo 60 giorni.
+  // Una tacca per giorno all'inizio del giorno (come gli spilli); i numeri si diradano
+  // in base allo spazio: passo 1, 2, 5 o 10 (multipli: 5, 10, 15…) perché ogni numero
+  // abbia almeno DAY_LABEL_PX. Il giorno 1 di ogni mese è sempre numerato, con una tacca
+  // più lunga; gli altri numeri troppo vicini a quelli già messi vengono saltati.
+  // Sabato e domenica hanno il numero più chiaro, le festività il colore delle festività.
+  const DAY_TICKS_MAX = 60, DAY_LABEL_PX = 16, DAY_TICKS_H = 18;
+  function dayTicksSvg(y, total, from, width, pos) {
+    const pxDay = width / (total - from);
+    const step = [1, 2, 5, 10].find(s => s * pxDay >= DAY_LABEL_PX) || 10;
+    const days = [];
+    for (let d = from; d < total; d++) days.push({ d, date: new Date(y, 0, d + 1) });
+    // numeri: prima i giorni 1, poi i multipli del passo che non si sovrappongono
+    const placed = [];
+    const fits = d => placed.every(p => Math.abs(p - d) * pxDay >= DAY_LABEL_PX);
+    days.forEach(x => { if (x.date.getDate() === 1) placed.push(x.d); });
+    days.forEach(x => {
+      const n = x.date.getDate();
+      if (n !== 1 && (step === 1 || n % step === 0) && fits(x.d)) placed.push(x.d);
+    });
+    const labeled = new Set(placed);
+    let out = '<g class="days">';
+    days.forEach(({ d, date }) => {
+      const n = date.getDate(), at = pos(d);
+      const len = n === 1 ? 7 : labeled.has(d) ? 4.5 : 2.5;
+      out += `<line class="day-tick${n === 1 ? " month" : ""}" x1="${at}%" x2="${at}%" y1="6" y2="${6 + len}"/>`;
+      if (!labeled.has(d)) return;
+      const cls = holidays(y)[key(date)] ? " holiday" : date.getDay() % 6 === 0 ? " weekend" : "";
+      out += `<text class="day-num${cls}" x="${at}%" y="${22}">${n}</text>`;
+    });
+    return out + "</g>";
+  }
+
+  // Zoom: cliccando il pallino di oggi la linea mostra solo da oggi a fine anno (oggi
+  // all'estremo sinistro); un altro clic torna all'anno intero. I numeri ai lati
+  // (giorni trascorsi e rimanenti) restano quelli dell'anno.
+  let yearZoom = false;
   function renderYear(now) {
     const y = now.getFullYear();
     const total = new Date(y, 1, 29).getMonth() === 1 ? 366 : 365;
     const done = dayOfYear(now) - 1;           // giorni interamente trascorsi
     const pct = done / total * 100;
+    const from = yearZoom ? done : 0;          // primo giorno visibile
+    const pos = d => (d - from) / (total - from) * 100;
     const line = document.getElementById("year-line");
     // rombo 7×7 px con i lati leggermente incurvati verso il centro
     const DIAMOND = "M0 -3.5 Q1.25 -1.25 3.5 0 Q1.25 1.25 0 3.5 Q-1.25 1.25 -3.5 0 Q-1.25 -1.25 0 -3.5Z";
     let svg = '<line class="track" x1="0" y1="4.5" x2="100%" y2="4.5"/>';
     for (let m = 1; m < 12; m++) {  // un puntino all'inizio di ogni mese da febbraio
-      const at = (dayOfYear(new Date(y, m, 1)) - 1) / total * 100;
+      const d = dayOfYear(new Date(y, m, 1)) - 1;
+      if (d <= from) continue;                 // mese già iniziato (vista ingrandita)
+      const at = pos(d);
       // SVG annidato per posizionare in percentuale una forma disegnata attorno all'origine
       svg += `<svg x="${at}%" y="4.5" overflow="visible"><path class="mark" d="${DIAMOND}"/></svg>`;
     }
-    svg += markersSvg(y, total, line.clientWidth);
+    // vista ingrandita breve: tacche dei giorni, e parentesi dei periodi più in basso
+    const ticks = yearZoom && total - from <= DAY_TICKS_MAX;
+    if (ticks) svg += dayTicksSvg(y, total, from, line.clientWidth, pos);
+    svg += markersSvg(y, total, line.clientWidth, from, ticks ? DAY_TICKS_H : 0);
     hideYearTip();  // il marcatore sotto il mouse viene ricreato
-    svg += `<circle class="dot" cx="${pct}%" cy="4.5" r="4.5"/>`;  // come il pallino del sole
+    // pallino di oggi (come quello del sole): è anche il pulsante dello zoom,
+    // con un'area di clic più grande del disegno
+    const label = escapeXml(yearZoom ? T.zoomOut : T.zoomIn);
+    svg += `<g class="today" tabindex="0" role="button" aria-label="${label}" aria-pressed="${yearZoom}">` +
+           `<svg x="${pos(done)}%" y="4.5" overflow="visible"><circle class="today-hit" r="11"/><circle class="dot" r="4.5"/></svg></g>`;
     line.innerHTML = svg;
     line.title = fmtText(T.year, done, total - done);
     document.getElementById("year-past").textContent = done;

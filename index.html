@@ -89,6 +89,11 @@
 
     <div class="cal-block">
       <section class="calendars" id="calendars"></section>
+      <div class="cal-nav">
+        <button class="cal-btn" type="button" id="cal-prev"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6l6 6"/></svg></button>
+        <button class="cal-btn cal-today" type="button" id="cal-today" hidden></button>
+        <button class="cal-btn" type="button" id="cal-next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6l-6 6"/></svg></button>
+      </div>
     </div>
 
     <aside class="rail">
@@ -96,6 +101,7 @@
       <nav class="links" id="links" aria-label="Collegamenti"></nav>
     </aside>
     <footer class="yearbar">
+      <div class="year-caption" id="year-caption" hidden></div>
       <div class="year-row">
         <span class="year-num" id="year-past"></span>
         <span class="brace" aria-hidden="true">}</span>

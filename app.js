@@ -5,7 +5,7 @@
   const I18N = {
     it: {
       name: "Italiano", title: "Home", prefs: "Preferenze", links: "Collegamenti",
-      searchOn: "Cerca su {0}", noHolidays: "Nessuna festività",
+      searchOn: "Cerca su {0}", calPrev: "Mese precedente", calNext: "Mese successivo", calToday: "Oggi", noHolidays: "Nessuna festività",
       sun: "Alba {0} · tramonto {1}", year: "{0} giorni trascorsi · {1} rimanenti", yearAria: "Avanzamento dell'anno", zoomIn: "Mostra da oggi a fine anno", zoomOut: "Mostra tutto l'anno",
       left: ["{0}g ({1} lavorativo)", "{0}g ({1} lavorativi)"], daysAgo: ["{0} giorno fa", "{0} giorni fa"], today: "oggi",
       holidays: { newYear: "Capodanno", epiphany: "Epifania", liberation: "Festa della Liberazione",
@@ -15,7 +15,7 @@
     },
     en: {
       name: "English", title: "Home", prefs: "Preferences", links: "Links",
-      searchOn: "Search {0}", noHolidays: "No holidays",
+      searchOn: "Search {0}", calPrev: "Previous month", calNext: "Next month", calToday: "Today", noHolidays: "No holidays",
       sun: "Sunrise {0} · sunset {1}", year: "{0} days passed · {1} left", yearAria: "Year progress", zoomIn: "Show from today to year end", zoomOut: "Show the whole year",
       left: ["{0}d ({1} working day)", "{0}d ({1} working days)"], daysAgo: ["{0} day ago", "{0} days ago"], today: "today",
       holidays: { newYear: "New Year's Day", epiphany: "Epiphany", liberation: "Liberation Day",
@@ -25,7 +25,7 @@
     },
     fr: {
       name: "Français", title: "Accueil", prefs: "Préférences", links: "Liens",
-      searchOn: "Rechercher sur {0}", noHolidays: "Aucun jour férié",
+      searchOn: "Rechercher sur {0}", calPrev: "Mois précédent", calNext: "Mois suivant", calToday: "Aujourd'hui", noHolidays: "Aucun jour férié",
       sun: "Lever {0} · coucher {1}", year: "{0} jours écoulés · {1} restants", yearAria: "Avancement de l'année", zoomIn: "Afficher d'aujourd'hui à la fin de l'année", zoomOut: "Afficher toute l'année",
       left: ["{0}j ({1} jour ouvré)", "{0}j ({1} jours ouvrés)"], daysAgo: ["il y a {0} jour", "il y a {0} jours"], today: "aujourd'hui",
       holidays: { newYear: "Jour de l'An", epiphany: "Épiphanie", liberation: "Fête de la Libération",
@@ -35,7 +35,7 @@
     },
     de: {
       name: "Deutsch", title: "Startseite", prefs: "Einstellungen", links: "Links",
-      searchOn: "Auf {0} suchen", noHolidays: "Keine Feiertage",
+      searchOn: "Auf {0} suchen", calPrev: "Vorheriger Monat", calNext: "Nächster Monat", calToday: "Heute", noHolidays: "Keine Feiertage",
       sun: "Sonnenaufgang {0} · Sonnenuntergang {1}", year: "{0} Tage vergangen · {1} übrig", yearAria: "Jahresfortschritt", zoomIn: "Von heute bis Jahresende anzeigen", zoomOut: "Ganzes Jahr anzeigen",
       left: ["{0}T ({1} Arbeitstag)", "{0}T ({1} Arbeitstage)"], daysAgo: ["vor {0} Tag", "vor {0} Tagen"], today: "heute",
       holidays: { newYear: "Neujahr", epiphany: "Heilige Drei Könige", liberation: "Tag der Befreiung",
@@ -45,7 +45,7 @@
     },
     es: {
       name: "Español", title: "Inicio", prefs: "Preferencias", links: "Enlaces",
-      searchOn: "Buscar en {0}", noHolidays: "Sin festivos",
+      searchOn: "Buscar en {0}", calPrev: "Mes anterior", calNext: "Mes siguiente", calToday: "Hoy", noHolidays: "Sin festivos",
       sun: "Amanecer {0} · atardecer {1}", year: "{0} días pasados · {1} restantes", yearAria: "Progreso del año", zoomIn: "Mostrar de hoy a fin de año", zoomOut: "Mostrar todo el año",
       left: ["{0}d ({1} día laborable)", "{0}d ({1} días laborables)"], daysAgo: ["hace {0} día", "hace {0} días"], today: "hoy",
       holidays: { newYear: "Año Nuevo", epiphany: "Epifanía", liberation: "Día de la Liberación",
@@ -80,6 +80,12 @@
     const gear = document.getElementById("open-prefs");
     gear.setAttribute("aria-label", T.prefs);
     gear.title = T.prefs;
+    // navigazione dei calendari
+    [["cal-prev", T.calPrev], ["cal-next", T.calNext], ["cal-today", T.calToday]].forEach(([id, t]) => {
+      const b = document.getElementById(id);
+      b.setAttribute("aria-label", t);
+      b.title = t;
+    });
   }
 
   // ---------- Festività italiane ----------
@@ -222,7 +228,7 @@
     const offset = (first.getDay() + 6) % 7; // lunedì = 0
     const start = new Date(year, month, 1 - offset);
     const lastDay = new Date(year, month + 1, 0).getDate();
-    const weeks = Math.ceil((offset + lastDay) / 7);
+    const weeks = 6;  // sempre sei righe: i calendari hanno tutti la stessa altezza
 
     const el = document.createElement("div");
     el.className = "cal" + (isCurrent ? " current" : "");
@@ -303,15 +309,31 @@
     span.style.setProperty("--today-dy", dy + "px");
   }
 
+  // Navigazione: calOffset = mesi di distanza del primo calendario dal mese corrente.
+  // Non viene salvato: a ogni apertura della pagina si riparte dal mese corrente.
+  let calOffset = 0;
+  // anno del primo mese mostrato: è anche l'anno della linea, quando non è ingrandita
+  const viewYear = now => new Date(now.getFullYear(), now.getMonth() + calOffset, 1).getFullYear();
   function renderCalendars(now) {
     const box = document.getElementById("calendars");
     box.innerHTML = "";
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    box.appendChild(monthCalendar(now.getFullYear(), now.getMonth(), today, true));
-    const next = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    box.appendChild(monthCalendar(next.getFullYear(), next.getMonth(), today, false));
+    [0, 1].forEach(i => {
+      const m = new Date(now.getFullYear(), now.getMonth() + calOffset + i, 1);
+      box.appendChild(monthCalendar(m.getFullYear(), m.getMonth(), today, calOffset + i === 0));
+    });
+    document.getElementById("cal-today").hidden = calOffset === 0;
     centerTodayCircle();
   }
+  function moveCalendars(delta) {
+    const now = new Date(), y = viewYear(now);
+    calOffset = delta ? calOffset + delta : 0;
+    renderCalendars(now);
+    if (viewYear(now) !== y) renderYear(now);  // cambio d'anno: anche la linea
+  }
+  document.getElementById("cal-prev").addEventListener("click", () => moveCalendars(-1));
+  document.getElementById("cal-next").addEventListener("click", () => moveCalendars(1));
+  document.getElementById("cal-today").addEventListener("click", () => moveCalendars(0));
 
   // ---------- Avanzamento dell'anno ----------
   // Tavolozza dei marcatori: colori medi, leggibili sia sul tema chiaro sia sullo scuro
@@ -502,7 +524,8 @@
   function toggleYearZoom() {
     yearZoom = !yearZoom;
     renderYear(new Date());
-    yearLineEl.querySelector(".today").focus({ preventScroll: true });
+    const dot = yearLineEl.querySelector(".today");
+    if (dot) dot.focus({ preventScroll: true });  // manca se la linea torna a un altro anno
   }
   yearLineEl.addEventListener("click", e => { if (e.target.closest(".today")) toggleYearZoom(); });
   yearLineEl.addEventListener("keydown", e => {
@@ -568,10 +591,14 @@
   // all'estremo sinistro); un altro clic torna all'anno intero. I numeri ai lati
   // (giorni trascorsi e rimanenti) restano quelli dell'anno.
   let yearZoom = false;
+  // Mostra l'anno dei calendari (viewYear); la vista ingrandita mostra sempre l'anno
+  // corrente, da oggi. In un altro anno non c'è il pallino di oggi: i giorni sono tutti
+  // trascorsi (anno passato) o tutti rimanenti (anno futuro) e sopra la linea c'è l'anno.
   function renderYear(now) {
-    const y = now.getFullYear();
+    const cy = now.getFullYear();
+    const y = yearZoom ? cy : viewYear(now);
     const total = new Date(y, 1, 29).getMonth() === 1 ? 366 : 365;
-    const done = dayOfYear(now) - 1;           // giorni interamente trascorsi
+    const done = y < cy ? total : y > cy ? 0 : dayOfYear(now) - 1;  // giorni interamente trascorsi
     const pct = done / total * 100;
     const from = yearZoom ? done : 0;          // primo giorno visibile
     const pos = d => (d - from) / (total - from) * 100;
@@ -597,9 +624,13 @@
     // pallino di oggi (come quello del sole): è anche il pulsante dello zoom,
     // con un'area di clic più grande del disegno
     const label = escapeXml(yearZoom ? T.zoomOut : T.zoomIn);
-    svg += `<g class="today" tabindex="0" role="button" aria-label="${label}" aria-pressed="${yearZoom}">` +
-           `<svg x="${pos(done)}%" y="4.5" overflow="visible"><circle class="today-hit" r="11"/><circle class="dot" r="4.5"/></svg></g>`;
+    if (y === cy)
+      svg += `<g class="today" tabindex="0" role="button" aria-label="${label}" aria-pressed="${yearZoom}">` +
+             `<svg x="${pos(done)}%" y="4.5" overflow="visible"><circle class="today-hit" r="11"/><circle class="dot" r="4.5"/></svg></g>`;
     line.innerHTML = svg;
+    const caption = document.getElementById("year-caption");
+    caption.textContent = y;
+    caption.hidden = y === cy;
     line.title = fmtText(T.year, done, total - done);
     document.getElementById("year-past").textContent = done;
     document.getElementById("year-left").textContent = total - done;

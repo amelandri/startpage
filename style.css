@@ -185,6 +185,28 @@ main {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
 }
+/* pulsanti per scorrere i mesi ai due lati; al centro il pallino per tornare al mese
+   corrente, che compare solo quando ci si è spostati */
+.cal-nav { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 14px; }
+.cal-btn {
+  height: 32px; min-width: 32px; padding: 0 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text-2);
+  font: inherit; font-size: 13px; cursor: pointer;
+}
+.cal-btn:hover { color: var(--text); }
+.cal-btn:focus-visible { outline: 2px solid var(--today); outline-offset: 2px; }
+.cal-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* pulsante grande quanto le frecce, ma disegnato solo come pallino, nel colore di oggi
+   (lo stesso del cerchio nel calendario e del pallino sulla linea dell'anno) */
+.cal-btn.cal-today { border: 0; background: none; padding: 0; }
+.cal-btn.cal-today[hidden] { display: none; }  /* display di .cal-btn annullerebbe hidden */
+.cal-today::before {
+  content: ""; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--today);
+}
+.cal-today:hover::before { box-shadow: 0 0 0 4px color-mix(in srgb, var(--today) 30%, transparent); }
 .cal {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -398,6 +420,11 @@ main {
 .year-line .marker .hit { fill: transparent; }
 /* Numeri ai due capi della linea, sulla stessa riga */
 .year-row { display: flex; align-items: center; gap: 14px; }
+/* anno mostrato dalla linea quando non è quello corrente (calendari spostati) */
+.year-caption {
+  position: absolute; left: 0; bottom: 100%; margin-bottom: 10px;
+  font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums;
+}
 .year-row .year-line { flex: 1; }
 .year-row .brace {
   font-family: var(--serif);

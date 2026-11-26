@@ -253,18 +253,10 @@ main {
   transform: translateY(var(--today-dy, 0px));
   z-index: -1;
 }
-.day[title]:not(.out)::after {
-  content: "";
-  position: absolute; bottom: 2px;
-  width: 3px; height: 3px; border-radius: 50%;
-  background: var(--holiday);
-}
-.day.today::after { display: none; }
 /* Marcatori della linea dell'anno nei calendari: pallino sotto il numero per i giorni
    singoli, barra per i periodi (continua da un giorno all'altro, una corsia ciascuno
    se si sovrappongono). L'elemento è più grande del disegno (::before) per il passaggio
-   del mouse. Il puntino delle festività lascia il posto ai marcatori. */
-.day.marked::after { display: none; }
+   del mouse. */
 .cal-dot, .cal-bar { position: absolute; --mk: var(--text-2); --lane: 0; }
 .cal-dot::before, .cal-bar::before { content: ""; position: absolute; background: var(--mk); }
 .cal-bar {

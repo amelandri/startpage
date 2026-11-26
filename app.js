@@ -265,7 +265,6 @@
           if (+o.end === +o.start) marks += `<i class="cal-dot" ${st} data-tip="${o.tip}"></i>`;
           else marks += `<i class="cal-bar${sameDay(cursor, o.start) ? " s" : ""}${sameDay(cursor, o.end) ? " e" : ""}" ${st} data-tip="${o.tip}"></i>`;
         });
-        if (marks) classes.push("marked");
         const title = h ? ` title="${escapeXml(h)}"` : "";
         html += `<div class="${classes.join(" ")}"${title}><span>${cursor.getDate()}</span>${marks}</div>`;
         cursor.setDate(cursor.getDate() + 1);

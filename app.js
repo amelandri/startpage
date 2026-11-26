@@ -605,9 +605,9 @@
   };
   const clone = o => JSON.parse(JSON.stringify(o));
 
-  function loadSettings() {
-    let s = null;
-    try { s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); } catch (e) {}
+  // preferenze lette da localStorage o da un file importato: i campi mancanti o non
+  // validi prendono il valore predefinito
+  function normalizeSettings(s) {
     const out = clone(DEFAULTS);
     if (s && typeof s === "object") {
       if (s.language === "auto" || I18N[s.language]) out.language = s.language;
@@ -622,10 +622,16 @@
       const loc = s.location;
       if (loc && parseCoord(loc.lat, 90) !== null && parseCoord(loc.lon, 180) !== null)
         out.location = { name: String(loc.name || ""), lat: +loc.lat, lon: +loc.lon };
-    } else {
-      // tema scelto con il vecchio interruttore
-      try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") out.theme = t; } catch (e) {}
     }
+    return out;
+  }
+  function loadSettings() {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"); } catch (e) {}
+    if (s && typeof s === "object") return normalizeSettings(s);
+    const out = clone(DEFAULTS);
+    // tema scelto con il vecchio interruttore
+    try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") out.theme = t; } catch (e) {}
     return out;
   }
   function saveSettings(s) {
@@ -964,6 +970,7 @@
 
   function renderDraft() {
     prefsError.textContent = "";
+    prefsError.classList.remove("info");
     // ricerche
     prefSearches.replaceChildren();
     draft.searches.forEach((s, i) => {
@@ -1119,6 +1126,8 @@
       case "up-link": [draft.links[i - 1], draft.links[i]] = [draft.links[i], draft.links[i - 1]]; break;
       case "down-link": [draft.links[i + 1], draft.links[i]] = [draft.links[i], draft.links[i + 1]]; break;
       case "reset": draft = clone(DEFAULTS); locNameEdited = false; applyTheme(draft.theme); break;
+      case "export": exportSettings(); return;
+      case "import": importFile.click(); return;
       case "cancel": closePrefs(false); return;
       case "find-place": findPlace(); return;
       default: return;
@@ -1143,7 +1152,7 @@
   async function findPlace() {
     if (findBtn.disabled) return false;  // ricerca già in corso
     const nameInput = prefsForm.querySelector('input[name="locName"]');
-    const fail = msg => { prefsError.textContent = msg; nameInput.classList.add("bad"); nameInput.focus(); return false; };
+    const fail = msg => { prefsError.textContent = msg; prefsError.classList.remove("info"); nameInput.classList.add("bad"); nameInput.focus(); return false; };
     const q = (draft.location.name || "").split(",")[0].trim();
     if (!q) return fail("Type the name of the place to find.");
     const text = findBtn.textContent;
@@ -1172,6 +1181,45 @@
       findBtn.textContent = text;
     }
   }
+  // ----- Esportazione e importazione delle preferenze -----
+  // Si esportano le preferenze salvate (non la bozza, che potrebbe non essere valida).
+  // L'importazione carica il file nella bozza: diventa effettiva solo con Save, dopo la validazione.
+  const importFile = document.getElementById("import-file");
+  function exportSettings() {
+    const data = { app: "startpage", version: 1, exported: new Date().toISOString(), settings };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2) + "\n"], { type: "application/json" }));
+    const a = document.createElement("a");
+    a.href = url;
+    const d = new Date(), p = n => String(n).padStart(2, "0");
+    a.download = `startpage-settings-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  importFile.addEventListener("change", async () => {
+    const file = importFile.files[0];
+    importFile.value = "";  // permette di scegliere di nuovo lo stesso file
+    if (!file) return;
+    let data = null;
+    try { data = JSON.parse(await file.text()); } catch (e) {}
+    // accetta sia il file esportato ({ app, settings }) sia l'oggetto delle preferenze da solo
+    const s = data && data.app === "startpage" ? data.settings : data;
+    const known = ["language", "theme", "yearView", "searches", "links", "markers", "location"];
+    if (!s || typeof s !== "object" || Array.isArray(s) || !known.some(k => k in s)) {
+      prefsError.textContent = "This file does not contain startpage preferences.";
+      prefsError.classList.remove("info");
+      return;
+    }
+    draft = normalizeSettings(s);
+    iconPicker = "";
+    locNameEdited = false;
+    applyTheme(draft.theme);
+    renderDraft();
+    prefsError.textContent = "Preferences loaded from the file: press Save to keep them.";
+    prefsError.classList.add("info");
+  });
+
   // Invio nel campo del nome avvia la ricerca invece di salvare
   prefsForm.querySelector('input[name="locName"]').addEventListener("keydown", e => {
     if (e.key === "Enter") { e.preventDefault(); findPlace(); }
@@ -1246,6 +1294,7 @@
     applySettings();
     if (!saveSettings(settings)) {
       // finestra lasciata aperta, altrimenti il messaggio non si vedrebbe
+      prefsError.classList.remove("info");
       prefsError.textContent = "Could not save in the browser: changes last only while the page stays open.";
       return;
     }

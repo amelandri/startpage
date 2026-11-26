@@ -183,7 +183,12 @@
         </section>
       </div>
       <div class="prefs-foot">
-        <button class="btn quiet" type="button" data-action="reset">Restore defaults</button>
+        <div class="left">
+          <button class="btn quiet" type="button" data-action="reset">Restore defaults</button>
+          <button class="btn quiet" type="button" data-action="export" title="Download the saved preferences as a JSON file">Export</button>
+          <button class="btn quiet" type="button" data-action="import" title="Load preferences from a JSON file (applied when you press Save)">Import…</button>
+          <input type="file" id="import-file" accept=".json,application/json" hidden>
+        </div>
         <div class="right">
           <p class="prefs-error" id="prefs-error" role="alert"></p>
           <button class="btn" type="button" data-action="cancel">Cancel</button>

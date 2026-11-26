@@ -37,6 +37,10 @@ Il pulsante a ingranaggio in basso a destra apre le preferenze:
 
 Le preferenze sono salvate nel `localStorage` del browser con la chiave `startpage-settings` (le favicon in `startpage-favicons`): restano su quel browser e quel dispositivo. "Restore defaults" torna alla configurazione iniziale.
 
+Per portarle su un altro browser o tenerne una copia:
+- **Export** scarica le preferenze salvate in un file `startpage-settings-AAAA-MM-GG.json`;
+- **Import…** carica un file esportato nella finestra: i valori mancanti o non validi prendono quelli predefiniti, e le preferenze diventano effettive solo premendo Save (con la solita validazione). Cancel le scarta.
+
 ## Scorciatoie da tastiera
 
 - All'apertura il cursore è già nel primo campo di ricerca.

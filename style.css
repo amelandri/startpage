@@ -541,7 +541,9 @@ main {
   padding: 14px 24px;
   border-top: 1px solid var(--border);
 }
-.prefs-foot .right { display: flex; align-items: center; gap: 8px; }
+.prefs-error.info { color: var(--text-2); }
+.prefs-foot { flex-wrap: wrap; }
+.prefs-foot .left, .prefs-foot .right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .btn {
   height: 36px; padding: 0 16px;
   border: 1px solid var(--border); border-radius: 8px;

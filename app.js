@@ -232,6 +232,18 @@
     html += `<div class="grid"><div class="dow"></div>` + DOW.map(d => `<div class="dow">${d}</div>`).join("");
 
     const monthHolidays = [];
+    // marcatori del mese: i periodi hanno una corsia (0, 1, …) perché le barre
+    // di periodi sovrapposti stiano una sopra l'altra
+    const occ = markerOccurrences(first, new Date(year, month, lastDay))
+      .sort((p, q) => p.start - q.start || q.end - p.end);
+    const lanesEnd = [];
+    occ.filter(o => +o.end !== +o.start).forEach(o => {
+      let lane = lanesEnd.findIndex(e => e < o.start);
+      if (lane < 0) { lane = lanesEnd.length; lanesEnd.push(0); }
+      lanesEnd[lane] = o.end;
+      o.lane = lane;
+    });
+    occ.forEach(o => { o.tip = escapeXml(markerTip(o.mk.label, o.start, o.end)); });
     const cursor = new Date(start);
     for (let w = 0; w < weeks; w++) {
       html += `<div class="wk">${isoWeek(cursor)}</div>`;
@@ -244,8 +256,18 @@
         if (h && !out) { classes.push("holiday"); monthHolidays.push([cursor.getDate(), h]); }
         if (sameDay(cursor, today)) classes.push("today");
         else if (cursor < today && !out) classes.push("past");
+        // pallino sotto il numero per i giorni singoli, barra per i periodi
+        // (con le estremità arrotondate nel primo e nell'ultimo giorno)
+        let marks = "";
+        if (!out) occ.forEach(o => {
+          if (cursor < o.start || cursor > o.end) return;
+          const st = `style="--mk: ${markerColor(o.mk.color)}` + (o.lane ? `; --lane: ${o.lane}"` : `"`);
+          if (+o.end === +o.start) marks += `<i class="cal-dot" ${st} data-tip="${o.tip}"></i>`;
+          else marks += `<i class="cal-bar${sameDay(cursor, o.start) ? " s" : ""}${sameDay(cursor, o.end) ? " e" : ""}" ${st} data-tip="${o.tip}"></i>`;
+        });
+        if (marks) classes.push("marked");
         const title = h ? ` title="${escapeXml(h)}"` : "";
-        html += `<div class="${classes.join(" ")}"${title}><span>${cursor.getDate()}</span></div>`;
+        html += `<div class="${classes.join(" ")}"${title}><span>${cursor.getDate()}</span>${marks}</div>`;
         cursor.setDate(cursor.getDate() + 1);
       }
     }
@@ -310,6 +332,29 @@
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || "");
     return m ? { y: +m[1], m: +m[2] - 1, d: +m[3] } : null;
   };
+  // Occorrenze dei marcatori che toccano l'intervallo di date [a, b]: { mk, start, end }
+  // (end = start per i giorni singoli). Per i marcatori annuali si considera anche
+  // l'occorrenza iniziata l'anno prima: un periodo a cavallo di capodanno
+  // (es. 20 dic – 6 gen) finisce nell'anno dopo.
+  function markerOccurrences(a, b) {
+    const out = [];
+    settings.markers.forEach(mk => {
+      const f = parseYMD(mk.from); if (!f) return;
+      const t = parseYMD(mk.to);
+      const years = mk.yearly ? [...new Set([a.getFullYear() - 1, a.getFullYear(), b.getFullYear()])] : [f.y];
+      years.forEach(ys => {
+        const start = new Date(ys, f.m, f.d);
+        let end = start;
+        if (t) {
+          end = new Date(mk.yearly ? ys : t.y, t.m, t.d);
+          if (mk.yearly && end < start) end = new Date(ys + 1, t.m, t.d);
+        }
+        if (end < start || end < a || start > b) return;  // non valido o fuori dall'intervallo
+        out.push({ mk, start, end });
+      });
+    });
+    return out;
+  }
   const escapeXml = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   // Parentesi graffa orizzontale da xa a xb (px), con la punta verso il basso.
   // top = y del lato piatto, h = metà profondità, r = raggio delle curve.
@@ -324,7 +369,8 @@
   // nell'ordine della lingua), nome, giorni mancanti e quanti di questi sono lavorativi.
   // I giorni lavorativi sono quelli tra oggi e il marcatore (esclusi entrambi),
   // dal lunedì al venerdì e senza festività. Per oggi e le date passate: "oggi",
-  // "N giorni fa". Usato solo per i giorni singoli (i periodi non hanno tooltip).
+  // "N giorni fa". Per i periodi (tooltip dei calendari) la data è "08/12–12/12"
+  // e quelli in corso valgono "oggi". Sulla linea dell'anno i periodi non hanno tooltip.
   const isWorkday = d => d.getDay() % 6 !== 0 && !holidays(d.getFullYear())[key(d)];
   // forme [singolare, plurale]: sceglie in base a n, poi sostituisce i segnaposto con args
   const plural = (forms, n, ...args) =>
@@ -339,9 +385,10 @@
       for (let d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1); d < start; d.setDate(d.getDate() + 1))
         if (isWorkday(d)) work++;
       when = plural(T.left, work, diff, work);  // "20g (12 lavorativi)": singolare/plurale sui lavorativi
-    } else if (diff === 0) when = T.today;
+    } else if (diff === 0 || end >= today) when = T.today;  // oggi, o periodo in corso
     else when = plural(T.daysAgo, days(end, today));
-    const date = start.toLocaleDateString(LOCALE, { day: "2-digit", month: "2-digit" });  // "08/12"
+    const dm = d => d.toLocaleDateString(LOCALE, { day: "2-digit", month: "2-digit" });  // "08/12"
+    const date = +end === +start ? dm(start) : `${dm(start)}–${dm(end)}`;
     return `${date} ${label} ${when}`;
   }
 
@@ -356,26 +403,13 @@
     const y0 = new Date(y, 0, 1), y1 = new Date(y, 11, 31);
     // 1) calcola posizione e tipo di ogni marcatore che cade nell'anno y
     const items = [];
-    settings.markers.forEach(mk => {
-      const a = parseYMD(mk.from); if (!a) return;
-      const b = parseYMD(mk.to);
-      // per i marcatori annuali conta anche l'occorrenza iniziata l'anno prima:
-      // un periodo a cavallo di capodanno (es. 20 dic – 6 gen) finisce nell'anno y
-      (mk.yearly ? [y - 1, y] : [a.y]).forEach(ys => {
-        const start = new Date(ys, a.m, a.d);
-        let end = start;
-        if (b) {
-          end = new Date(mk.yearly ? ys : b.y, b.m, b.d);
-          if (mk.yearly && end < start) end = new Date(ys + 1, b.m, b.d);
-        }
-        if (end < start || end < y0 || start > y1) return;  // non valido o fuori dall'anno
-        const vs = start < y0 ? y0 : start, ve = end > y1 ? y1 : end;
-        const d0 = dayOfYear(vs) - 1, d1 = dayOfYear(ve);   // inizio del primo giorno, fine dell'ultimo
-        if (d1 <= from) return;                             // già passato (vista ingrandita)
-        const x0 = pos(Math.max(d0, from)), x1 = pos(d1);   // i periodi in corso partono da oggi
-        const range = +end !== +start;
-        items.push({ mk, x0, x1, range, lane: 0, tip: range ? "" : markerTip(mk.label, start, end) });
-      });
+    markerOccurrences(y0, y1).forEach(({ mk, start, end }) => {
+      const vs = start < y0 ? y0 : start, ve = end > y1 ? y1 : end;
+      const d0 = dayOfYear(vs) - 1, d1 = dayOfYear(ve);   // inizio del primo giorno, fine dell'ultimo
+      if (d1 <= from) return;                             // già passato (vista ingrandita)
+      const x0 = pos(Math.max(d0, from)), x1 = pos(d1);   // i periodi in corso partono da oggi
+      const range = +end !== +start;
+      items.push({ mk, x0, x1, range, lane: 0, tip: range ? "" : markerTip(mk.label, start, end) });
     });
     // 2) periodi sovrapposti: quello che inizia dopo scende di una "corsia"
     //    (14 px: abbastanza perché anche le descrizioni non si accavallino)
@@ -441,7 +475,7 @@
     const bar = yearTip.offsetParent;            // .yearbar
     const z = bar.currentCSSZoom || 1;           // zoom degli schermi grandi: misure in px CSS
     const b = bar.getBoundingClientRect();
-    const r = g.querySelector(".flag").getBoundingClientRect();  // pallino dello spillo
+    const r = (g.querySelector(".flag") || g).getBoundingClientRect();  // pallino dello spillo, o segno del calendario
     const cx = (r.left + r.width / 2 - b.left) / z;
     const w = yearTip.offsetWidth, W = bar.clientWidth;
     const left = Math.min(Math.max(cx, w / 2), W - w / 2);
@@ -457,6 +491,14 @@
     else if (g !== tipFor) { tipFor = g; showYearTip(g); }
   });
   yearLineEl.addEventListener("pointerleave", hideYearTip);
+  // segni dei marcatori nei calendari: stesso tooltip
+  const calendarsEl = document.getElementById("calendars");
+  calendarsEl.addEventListener("pointerover", e => {
+    const el = e.target.closest("[data-tip]");
+    if (!el) hideYearTip();
+    else if (el !== tipFor) { tipFor = el; showYearTip(el); }
+  });
+  calendarsEl.addEventListener("pointerleave", hideYearTip);
   // clic (o Invio/Spazio) sul pallino di oggi: alterna anno intero e da oggi a fine anno
   function toggleYearZoom() {
     yearZoom = !yearZoom;

@@ -260,6 +260,25 @@ main {
   background: var(--holiday);
 }
 .day.today::after { display: none; }
+/* Marcatori della linea dell'anno nei calendari: pallino sotto il numero per i giorni
+   singoli, barra per i periodi (continua da un giorno all'altro, una corsia ciascuno
+   se si sovrappongono). L'elemento è più grande del disegno (::before) per il passaggio
+   del mouse. Il puntino delle festività lascia il posto ai marcatori. */
+.day.marked::after { display: none; }
+.cal-dot, .cal-bar { position: absolute; --mk: var(--text-2); --lane: 0; }
+.cal-dot::before, .cal-bar::before { content: ""; position: absolute; background: var(--mk); }
+.cal-bar {
+  left: 0; right: 0; height: 7px;
+  bottom: calc(-1px + var(--lane) * 3px);
+}
+.cal-bar::before { left: 0; right: 0; top: 2.5px; height: 2px; }
+.cal-bar.s::before { left: 22%; border-top-left-radius: 1px; border-bottom-left-radius: 1px; }
+.cal-bar.e::before { right: 22%; border-top-right-radius: 1px; border-bottom-right-radius: 1px; }
+.cal-dot {
+  z-index: 1;
+  left: 50%; bottom: -1px; width: 11px; height: 11px; margin-left: -5.5px;
+}
+.cal-dot::before { inset: 3px; border-radius: 50%; box-shadow: 0 0 0 1.5px var(--surface); }
 
 .holidays {
   margin-top: auto;

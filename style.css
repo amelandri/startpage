@@ -364,7 +364,9 @@ main {
   fill: var(--text-3); font-family: var(--sans); font-size: 10px;
   text-anchor: middle; font-variant-numeric: tabular-nums;
 }
-.year-line .day-num.weekend { fill: var(--text-4); }
+.year-line .weekend-band { fill: var(--chip-bg); }
+.year-line .day-tick.weekend { stroke: var(--text-3); }
+.year-line .day-num.weekend { fill: var(--text-2); font-weight: 600; }
 .year-line .day-num.holiday { fill: var(--holiday); }
 /* il pallino di oggi è il pulsante dello zoom: alone al passaggio del mouse e col focus */
 .year-line .today { cursor: pointer; outline: none; }

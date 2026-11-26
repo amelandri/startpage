@@ -471,7 +471,9 @@
   // in base allo spazio: passo 1, 2, 5 o 10 (multipli: 5, 10, 15…) perché ogni numero
   // abbia almeno DAY_LABEL_PX. Il giorno 1 di ogni mese è sempre numerato, con una tacca
   // più lunga; gli altri numeri troppo vicini a quelli già messi vengono saltati.
-  // Sabato e domenica hanno il numero più chiaro, le festività il colore delle festività.
+  // I fine settimana hanno una fascia di sfondo (centrata sulle tacche, come i numeri) che
+  // resta visibile anche quando i numeri sono diradati; le festività hanno il colore delle
+  // festività. Restituisce { back: fasce, da disegnare sotto la linea; front: tacche e numeri }.
   const DAY_TICKS_MAX = 60, DAY_LABEL_PX = 16, DAY_TICKS_H = 18;
   function dayTicksSvg(y, total, from, width, pos) {
     const pxDay = width / (total - from);
@@ -487,16 +489,29 @@
       if (n !== 1 && (step === 1 || n % step === 0) && fits(x.d)) placed.push(x.d);
     });
     const labeled = new Set(placed);
-    let out = '<g class="days">';
+    const weekend = date => date.getDay() % 6 === 0;
+    // fasce: una per ogni gruppo di giorni di fine settimana consecutivi
+    const half = 50 / (total - from);          // mezzo giorno, in %
+    let back = '<g class="weekends">';
+    days.forEach(({ d, date }, i) => {
+      if (!weekend(date) || (i > 0 && weekend(days[i - 1].date))) return;  // solo l'inizio del gruppo
+      let last = d;
+      while (last + 1 < total && weekend(new Date(y, 0, last + 2))) last++;
+      const a = Math.max(0, pos(d) - half), b = Math.min(100, pos(last) + half);
+      back += `<rect class="weekend-band" x="${a}%" y="0" width="${b - a}%" height="27" rx="4"/>`;
+    });
+    back += "</g>";
+    let front = '<g class="days">';
     days.forEach(({ d, date }) => {
       const n = date.getDate(), at = pos(d);
       const len = n === 1 ? 7 : labeled.has(d) ? 4.5 : 2.5;
-      out += `<line class="day-tick${n === 1 ? " month" : ""}" x1="${at}%" x2="${at}%" y1="6" y2="${6 + len}"/>`;
+      const we = weekend(date) ? " weekend" : "";
+      front += `<line class="day-tick${n === 1 ? " month" : ""}${we}" x1="${at}%" x2="${at}%" y1="6" y2="${6 + len}"/>`;
       if (!labeled.has(d)) return;
-      const cls = holidays(y)[key(date)] ? " holiday" : date.getDay() % 6 === 0 ? " weekend" : "";
-      out += `<text class="day-num${cls}" x="${at}%" y="${22}">${n}</text>`;
+      const cls = holidays(y)[key(date)] ? " holiday" : we;
+      front += `<text class="day-num${cls}" x="${at}%" y="${22}">${n}</text>`;
     });
-    return out + "</g>";
+    return { back, front: front + "</g>" };
   }
 
   // Zoom: cliccando il pallino di oggi la linea mostra solo da oggi a fine anno (oggi
@@ -523,7 +538,10 @@
     }
     // vista ingrandita breve: tacche dei giorni, e parentesi dei periodi più in basso
     const ticks = yearZoom && total - from <= DAY_TICKS_MAX;
-    if (ticks) svg += dayTicksSvg(y, total, from, line.clientWidth, pos);
+    if (ticks) {
+      const t = dayTicksSvg(y, total, from, line.clientWidth, pos);
+      svg = t.back + svg + t.front;  // fasce dei fine settimana sotto la linea
+    }
     svg += markersSvg(y, total, line.clientWidth, from, ticks ? DAY_TICKS_H : 0);
     hideYearTip();  // il marcatore sotto il mouse viene ricreato
     // pallino di oggi (come quello del sole): è anche il pulsante dello zoom,
@@ -566,6 +584,7 @@
   const DEFAULTS = {
     language: "auto",  // "auto" (lingua del browser) o una chiave di I18N
     theme: "system",
+    yearView: "year",  // vista iniziale della linea dell'anno: "year" (intera) o "today" (da oggi)
     searches: [
       { engine: "duckduckgo",   label: "DuckDuckGo", url: engineById("duckduckgo").url,   key: "d" },
       { engine: "wikipedia-en", label: "Wikipedia",  url: engineById("wikipedia-en").url, key: "w" }
@@ -593,6 +612,7 @@
     if (s && typeof s === "object") {
       if (s.language === "auto" || I18N[s.language]) out.language = s.language;
       if (["system", "light", "dark"].includes(s.theme)) out.theme = s.theme;
+      if (["year", "today"].includes(s.yearView)) out.yearView = s.yearView;
       // scarta le voci malformate, che altrimenti bloccherebbero la pagina
       const isStr = v => typeof v === "string";
       const okItem = x => x && isStr(x.label) && isStr(x.url);
@@ -874,7 +894,14 @@
     renderSunDay(now);
     renderFavicon(now);
   }
+  // la vista della linea dell'anno segue la preferenza all'avvio e quando la preferenza
+  // cambia; salvare altre preferenze non annulla lo zoom scelto col clic sul pallino
+  let appliedYearView = null;
   function applySettings() {
+    if (settings.yearView !== appliedYearView) {
+      appliedYearView = settings.yearView;
+      yearZoom = settings.yearView === "today";
+    }
     applyLanguage(settings.language);
     applyTheme(settings.theme);
     renderSearches();
@@ -1002,6 +1029,7 @@
       prefMarkers.appendChild(row);
     });
     prefsForm.querySelectorAll('input[name="theme"]').forEach(r => { r.checked = r.value === draft.theme; });
+    prefsForm.querySelectorAll('input[name="yearView"]').forEach(r => { r.checked = r.value === draft.yearView; });
     prefsForm.querySelector('select[name="language"]').value = draft.language;
     const coord = v => typeof v === "number" ? String(v) : (v || "");
     prefsForm.querySelectorAll(".loc-row input").forEach(i => i.classList.remove("bad"));
@@ -1020,6 +1048,7 @@
     const el = e.target;
     el.classList.remove("bad");
     if (el.name === "theme") { draft.theme = el.value; applyTheme(draft.theme); return; } // anteprima
+    if (el.name === "yearView") { draft.yearView = el.value; return; }
     if (el.name === "language") { draft.language = el.value; return; }
     if (el.classList.contains("icon-filter")) {  // filtra le icone per nome
       const q = el.value.trim().toLowerCase();

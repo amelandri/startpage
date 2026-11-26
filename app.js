@@ -324,7 +324,7 @@
   // nell'ordine della lingua), nome, giorni mancanti e quanti di questi sono lavorativi.
   // I giorni lavorativi sono quelli tra oggi e il marcatore (esclusi entrambi),
   // dal lunedì al venerdì e senza festività. Per oggi e le date passate: "oggi",
-  // "N giorni fa". Usato solo per gli spilli (i periodi non hanno tooltip).
+  // "N giorni fa". Usato solo per i giorni singoli (i periodi non hanno tooltip).
   const isWorkday = d => d.getDay() % 6 !== 0 && !holidays(d.getFullYear())[key(d)];
   // forme [singolare, plurale]: sceglie in base a n, poi sostituisce i segnaposto con args
   const plural = (forms, n, ...args) =>
@@ -344,6 +344,10 @@
     const date = start.toLocaleDateString(LOCALE, { day: "2-digit", month: "2-digit" });  // "08/12"
     return `${date} ${label} ${when}`;
   }
+
+  // larghezza minima (px) di un periodo per disegnarlo con la graffa; sotto la graffa
+  // diventa uno spillo rivolto verso il basso (corsia ed etichetta restano le stesse)
+  const BRACE_MIN_PX = 40;
 
   // from: primo giorno visibile (indice da 0): 0 per tutto l'anno, oggi nella vista ingrandita.
   // shift: di quanto abbassare le parentesi dei periodi (per lasciare posto alle tacche dei giorni)
@@ -391,12 +395,17 @@
       out += `<g class="marker" style="--mk: ${markerColor(mk.color)}"` +
              (tip ? ` data-tip="${t}" role="img" aria-label="${t}">` : ">");
       if (range) {
-        // periodo: parentesi graffa sotto la linea e descrizione sotto la punta
-        const xa = x0 / 100 * width, xb = x1 / 100 * width, off = lane * LANE + shift;
-        out += `<rect class="hit" x="${xa}" y="2" width="${xb - xa}" height="${38 + off}"/>` +
+        // periodo: tratto colorato sulla linea, graffa sotto (o spillo verso il basso se
+        // il periodo è più stretto di BRACE_MIN_PX) e descrizione sotto la punta
+        const xa = x0 / 100 * width, xb = x1 / 100 * width, xm = (xa + xb) / 2, off = lane * LANE + shift;
+        const yTip = 22 + off;  // y della punta della graffa
+        out += `<rect class="hit" x="${Math.min(xa, xm - 5)}" y="2" width="${Math.max(xb - xa, 10)}" height="${38 + off}"/>` +
                `<line class="span" x1="${xa}" y1="4.5" x2="${xb}" y2="4.5"/>` +
-               `<path class="brace" d="${bracePath(xa, xb, 12 + off, 5)}"/>` +
-               `<text class="brace-label" x="${(xa + xb) / 2}" y="${36 + off}">${escapeXml(mk.label)}</text></g>`;
+               (xb - xa < BRACE_MIN_PX
+                 ? `<line class="flag-stem" x1="${xm}" y1="4.5" x2="${xm}" y2="${yTip - 3}"/>` +
+                   `<circle class="flag" cx="${xm}" cy="${yTip - 2.5}" r="3"/>`
+                 : `<path class="brace" d="${bracePath(xa, xb, 12 + off, 5)}"/>`) +
+               `<text class="brace-label" x="${xm}" y="${36 + off}">${escapeXml(mk.label)}</text></g>`;
       } else {
         // giorno singolo: spillo con un cerchio in cima, stelo di 11 px
         const stem = 11;

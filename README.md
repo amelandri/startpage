@@ -17,7 +17,7 @@ L'interfaccia principale è disponibile in italiano, inglese, francese, tedesco 
   3. se manca anche quella (sito senza icona o pagina senza rete), un'icona generica scelta in base a nome o indirizzo.
 
   Nelle preferenze si può scegliere l'icona di ogni collegamento e di ogni motore di ricerca. Le icone sono di [Tabler Icons](https://tabler.io/icons) (licenza MIT).
-- **Linea dell'anno** in fondo: giorni trascorsi e rimanenti, rombi all'inizio di ogni mese e marcatori personali (giorni singoli come spilli, periodi come parentesi graffe con descrizione). Passando il mouse su uno spillo compare subito sopra di esso un riquadro come `08/12 Compleanno 20g (12 lavorativi)`: data, nome, giorni mancanti e quanti di questi sono lavorativi (dal lunedì al venerdì, festività escluse, senza contare oggi e il giorno del marcatore); per oggi indica "oggi", per le date passate quanti giorni fa. I periodi non hanno tooltip: la loro descrizione è già scritta sotto la parentesi.
+- **Linea dell'anno** in fondo: giorni trascorsi e rimanenti, rombi all'inizio di ogni mese e marcatori personali (giorni singoli come spilli, periodi come parentesi graffe con descrizione). Passando il mouse su uno spillo compare subito sopra di esso un riquadro come `08/12 Compleanno 20g (12 lavorativi)`: data, nome, giorni mancanti e quanti di questi sono lavorativi (dal lunedì al venerdì, festività escluse, senza contare oggi e il giorno del marcatore); per oggi indica "oggi", per le date passate quanti giorni fa. I periodi troppo brevi per una parentesi leggibile (meno di 40 px, quindi dipende dallo zoom) hanno al posto della parentesi uno spillo rivolto verso il basso al centro del periodo; tratto colorato e descrizione restano uguali. I periodi non hanno tooltip: la descrizione è già scritta sotto.
   Cliccando il pallino di oggi la linea si ingrandisce e mostra solo il periodo da oggi alla fine dell'anno, con oggi all'estremo sinistro (spilli e periodi già passati spariscono, quelli in corso partono da oggi); i numeri dei giorni trascorsi e rimanenti non cambiano. Se il periodo mostrato è di 60 giorni o meno, sotto la linea compaiono le tacche dei giorni con il numero del giorno del mese: tutti se c'è spazio, altrimenti uno ogni 2, 5 o 10, con il giorno 1 di ogni mese sempre indicato. I fine settimana sono evidenziati da una fascia di sfondo con i numeri in grassetto (visibile anche quando i numeri sono diradati), le festività sono colorate. Un altro clic torna all'anno intero. Il pallino si attiva anche da tastiera (Tab, poi Invio o Spazio).
 - **Favicon** che mostra il giorno del mese, come un foglio di calendario.
 
@@ -56,6 +56,7 @@ Alcune impostazioni non sono nelle preferenze e si cambiano direttamente nel cod
 - `ENGINES`: elenco dei motori di ricerca proposti.
 - `holidays()`: elenco delle festività.
 - `MARKER_COLORS`: colori disponibili per i marcatori.
+- `BRACE_MIN_PX`: larghezza minima di un periodo per essere disegnato con la parentesi invece che con lo spillo verso il basso.
 - `BRAND_ICONS`, `GENERIC_ICONS` e `BRAND_HOSTS`: icone disponibili per i collegamenti e domini riconosciuti in automatico.
 - Variabili CSS in `:root`: palette dei temi chiaro e scuro.
 
